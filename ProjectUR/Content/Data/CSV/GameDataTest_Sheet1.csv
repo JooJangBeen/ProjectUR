@@ -1,0 +1,5 @@
+int,string,float
+ID,Description,Hp
+1,Hello,10.1
+2,Excel,12.2
+3,World!,16.7

@@ -1,0 +1,24 @@
+﻿[
+    {
+        "ExcelFileName":  "GameDataTest.xlsx",
+        "Sheets":  [
+                       {
+                           "CsvFileName":  "GameDataTest_Sheet1.csv",
+                           "SheetName":  "GameDataTest_Sheet1"
+                       },
+                       {
+                           "CsvFileName":  "GameDataTest_Sheet2.csv",
+                           "SheetName":  "GameDataTest_Sheet2"
+                       }
+                   ]
+    },
+    {
+        "ExcelFileName":  "PlayerInfo.xlsx",
+        "Sheets":  [
+                       {
+                           "CsvFileName":  "PlayerInfo_Sheet1.csv",
+                           "SheetName":  "PlayerInfo_Sheet1"
+                       }
+                   ]
+    }
+]

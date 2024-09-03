@@ -1,0 +1,2 @@
+엑셀을 CSV로 변환시켜주는데 파워쉘을 사용함
+다운로드 경로: https://apps.microsoft.com/detail/9mz1snwt0n5d?rtc=1&hl=ko-kr&gl=KR
