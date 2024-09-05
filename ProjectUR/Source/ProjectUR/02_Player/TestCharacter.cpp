@@ -20,8 +20,8 @@ ATestCharacter::ATestCharacter()
 	bUseControllerRotationRoll = false;
 
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	//GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
@@ -87,16 +87,17 @@ void ATestCharacter::BeginPlay()
 	}
 
 	// Box Collision Component 초기화
-	CollisionCapsule = FindComponentByClass<UCapsuleComponent>();
-	//RootComponent = CollisionCapsule;
+	UCapsuleComponent* CollisionCapsule = FindComponentByClass<UCapsuleComponent>();
+
 
 	// 콜리전 이벤트를 활성화
 	CollisionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionCapsule->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	CollisionCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	CollisionCapsule->SetGenerateOverlapEvents(true);
 
 	// Overlap 이벤트 바인딩
 	CollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &ATestCharacter::TestCharacterOnOverlapBegin);
+	CollisionCapsule->OnComponentHit.AddDynamic(this, &ATestCharacter::TestCharacterOnHit);
 
 	InteractionData.CurrentInteractableActor = this;
 }
@@ -154,7 +155,15 @@ void ATestCharacter::TestCharacterOnOverlapBegin(UPrimitiveComponent* Overlapped
 {
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Collision");
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Overlaped");
+	}
+}
+
+void ATestCharacter::TestCharacterOnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor && OtherActor != this && OtherComp)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "blocked");
 	}
 }
 
@@ -203,7 +212,7 @@ void ATestCharacter::TestInterAct(const FInputActionValue& Value)
 	if (InteractionData.CurrentInteractableActor == nullptr)
 		return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Interacted2");
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Interacted");
 }
 
 void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
