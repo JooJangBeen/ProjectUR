@@ -26,14 +26,19 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Move(const FInputActionValue& Value) override;
 	virtual void Look(const FInputActionValue& Value) override;
+	void TestInterAct(const FInputActionValue& Value);
 
 	//======================================================================
 	// Collision & Raycast
 	//======================================================================
 protected:
-	void PerformRaycastCheck();
-	void TestInterAct(const FInputActionValue& Value);
+	UFUNCTION()
+	void TestCharacterOnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,	bool bFromSweep, const FHitResult& SweepResult);
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UCapsuleComponent* CollisionCapsule;
 
+	void PerformRaycastCheck();
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 

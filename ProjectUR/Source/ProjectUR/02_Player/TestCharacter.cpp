@@ -42,7 +42,7 @@ ATestCharacter::ATestCharacter()
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/02_Player/99_Resources/ParagonKallari/Characters/Heroes/Kallari/Kallari_AnimBlueprint.Kallari_AnimBlueprint"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/02_Player/99_Resources/ParagonKallari/Characters/Heroes/Kallari/Kallari_AnimBlueprint.Kallari_AnimBlueprint_C"));
 
 	if (AnimInstClassRef.Class)
 		GetMesh()->SetAnimInstanceClass(AnimInstClassRef.Class);
@@ -70,8 +70,7 @@ ATestCharacter::ATestCharacter()
 		InterAction = InputActionInterRef.Object;
 
 
-	
-	
+
 
 }
 
@@ -85,9 +84,19 @@ void ATestCharacter::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		//Subsystem->RemoveMappingContext(DefaultMappingContext);
 		//Subsystem->ClearAllMappings();
-
 	}
 
+	// Box Collision Component 초기화
+	CollisionCapsule = FindComponentByClass<UCapsuleComponent>();
+	//RootComponent = CollisionCapsule;
+
+	// 콜리전 이벤트를 활성화
+	CollisionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionCapsule->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	CollisionCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+
+	// Overlap 이벤트 바인딩
+	CollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &ATestCharacter::TestCharacterOnOverlapBegin);
 
 	InteractionData.CurrentInteractableActor = this;
 }
@@ -140,6 +149,14 @@ void ATestCharacter::Look(const FInputActionValue& Value)
 }
 
 
+
+void ATestCharacter::TestCharacterOnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && OtherComp)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Collision");
+	}
+}
 
 void ATestCharacter::PerformRaycastCheck()
 {
