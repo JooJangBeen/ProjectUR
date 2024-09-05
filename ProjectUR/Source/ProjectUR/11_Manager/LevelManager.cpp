@@ -20,7 +20,7 @@ void ULevelManager::BeginLoadingScreen(FName loadingLevelName, FString openLevel
 {
 	UGameplayStatics::OpenLevel(GetWorld(), loadingLevelName);
 	
-	LoadPackageAsync(openLevelPath, FLoadPackageAsyncDelegate::CreateLambda([=, this](const FName& PackagaName, UPackage* loadedPackage, EAsyncLoadingResult::Type Result)
+	LoadPackageAsync(openLevelPath, FLoadPackageAsyncDelegate::CreateLambda([&, this](const FName& PackagaName, UPackage* loadedPackage, EAsyncLoadingResult::Type Result)
 		{
 			if (Result == EAsyncLoadingResult::Succeeded)
 			{
