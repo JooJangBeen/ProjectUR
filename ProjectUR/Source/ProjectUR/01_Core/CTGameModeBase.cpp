@@ -3,6 +3,9 @@
 
 #include "CTGameModeBase.h"
 #include "CTPlayerController.h"
+#include "InputMappingContext.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 ACTGameModeBase::ACTGameModeBase()
 {
@@ -16,4 +19,10 @@ ACTGameModeBase::ACTGameModeBase()
 
 	PlayerControllerClass = ACTPlayerController::StaticClass();
 
+
+
+
 }
+
+
+

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "InputActionValue.h"
 #include "CTGameModeBase.generated.h"
 
 /**
@@ -16,5 +17,5 @@ class PROJECTUR_API ACTGameModeBase : public AGameModeBase
 
 public:
 	ACTGameModeBase();
-	
+
 };

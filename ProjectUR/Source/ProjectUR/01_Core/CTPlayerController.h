@@ -13,8 +13,27 @@ UCLASS()
 class PROJECTUR_API ACTPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	ACTPlayerController();
 
 protected:
 	virtual void BeginPlay() override;
+
+
+
+	//==================================================================================
+	// Key Input
+	//==================================================================================
+protected:
+	virtual void SetupInputComponent() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> WorldKeyAction;
+
+	UFUNCTION()
+	virtual void FucTestWorldKey(const FInputActionValue& Value);
 };

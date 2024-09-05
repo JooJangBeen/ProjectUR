@@ -12,6 +12,9 @@
 
 ATestCharacter::ATestCharacter()
 {
+	InteractionData.CurrentInteractableActor = nullptr;
+	TargetInteractableActor = nullptr;
+
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -62,7 +65,13 @@ ATestCharacter::ATestCharacter()
 	if (nullptr != InputActionLookRef.Object)
 		LookAction = InputActionLookRef.Object;
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInterRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/TestPlayerIA/IA_TestInterAct.IA_TestInterAct'"));
+	if (nullptr != InputActionInterRef.Object)
+		InterAction = InputActionInterRef.Object;
 
+
+	
+	
 
 }
 
@@ -75,14 +84,27 @@ void ATestCharacter::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		//Subsystem->RemoveMappingContext(DefaultMappingContext);
+		//Subsystem->ClearAllMappings();
+
 	}
 
 
+	InteractionData.CurrentInteractableActor = this;
+}
+
+void ATestCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	//if (GetWorld()->TimeSince(InteractionData.LastInteractionCheckTime) > 0.1f)
+	//	PerformRaycastCheck();
 }
 
 void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	//PlayerInputComponent->BindKey
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
@@ -90,6 +112,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATestCharacter::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATestCharacter::Look);
+	EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Triggered, this, &ATestCharacter::TestInterAct);
 }
 
 void ATestCharacter::Move(const FInputActionValue& Value)
@@ -104,6 +127,8 @@ void ATestCharacter::Move(const FInputActionValue& Value)
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
+
+	//
 }
 
 void ATestCharacter::Look(const FInputActionValue& Value)
@@ -111,5 +136,79 @@ void ATestCharacter::Look(const FInputActionValue& Value)
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(LookAxisVector.Y);
+	AddControllerPitchInput(-LookAxisVector.Y);
+}
+
+
+
+void ATestCharacter::PerformRaycastCheck()
+{
+	InteractionData.CurrentInteractableActor = nullptr;
+	TargetInteractableActor = nullptr;
+	InteractionData.LastInteractionCheckTime = GetWorld()->GetRealTimeSeconds();
+
+	FVector TraceStart{ GetPawnViewLocation() };
+	FVector TraceEnd{ TraceStart + GetViewRotation().Vector() * 200.f };
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	FHitResult TraceHit;
+
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 0.5f, 0 ,1.f);
+
+
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+	{
+		if (TraceHit.GetActor()->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+		{
+			if (TraceHit.GetActor() != InteractionData.CurrentInteractableActor)
+			{
+				InteractionData.CurrentInteractableActor = TraceHit.GetActor();
+				TargetInteractableActor = InteractionData.CurrentInteractableActor;
+				return;
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+
+	//====================================
+
+
+
+}
+
+void ATestCharacter::TestInterAct(const FInputActionValue& Value)
+{
+	if (InteractionData.CurrentInteractableActor == nullptr)
+		return;
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Interacted2");
+}
+
+void ATestCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (OtherActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+	{
+		if (OtherActor != InteractionData.CurrentInteractableActor)
+		{
+			InteractionData.CurrentInteractableActor = OtherActor;
+			TargetInteractableActor = InteractionData.CurrentInteractableActor;
+			return;
+		}
+		else
+		{
+			return;
+		}
+	}
+
+}
+
+void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	InteractionData.CurrentInteractableActor = nullptr;
+	TargetInteractableActor = nullptr;
 }

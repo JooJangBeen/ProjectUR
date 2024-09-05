@@ -19,6 +19,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 
 protected:
@@ -26,5 +27,14 @@ protected:
 	virtual void Move(const FInputActionValue& Value) override;
 	virtual void Look(const FInputActionValue& Value) override;
 
+	//======================================================================
+	// Collision & Raycast
+	//======================================================================
+protected:
+	void PerformRaycastCheck();
+	void TestInterAct(const FInputActionValue& Value);
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
 };

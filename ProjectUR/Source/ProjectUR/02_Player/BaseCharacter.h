@@ -5,7 +5,27 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "../04_Actor/01_InteractableActor/InteractionInterface.h"
 #include "BaseCharacter.generated.h"
+
+USTRUCT()
+struct FInteractionData
+{
+	GENERATED_USTRUCT_BODY()
+
+	FInteractionData() :CurrentInteractableActor(nullptr)
+	{
+
+	}
+
+	UPROPERTY()
+	AActor* CurrentInteractableActor;
+
+	UPROPERTY()
+	float LastInteractionCheckTime;
+};
+
+
 
 UCLASS()
 class PROJECTUR_API ABaseCharacter : public ACharacter
@@ -21,7 +41,10 @@ protected:
 	virtual void BeginPlay() override;
 
 
-	//Camera
+
+	//==================================================================================
+	// Camera
+	//==================================================================================
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<class USpringArmComponent> CameraBoom;
@@ -30,7 +53,10 @@ protected:
 	TObjectPtr<class UCameraComponent> FollowCamera;
 
 
-	//Input
+
+	//==================================================================================
+	// Key Input
+	//==================================================================================
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Move(const FInputActionValue& Value);
@@ -48,4 +74,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<class UInputAction> LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> InterAction;
+
+
+
+	//==================================================================================
+	// InterAction
+	//==================================================================================
+protected:
+	UPROPERTY(VisibleAnywhere, Category = "Character | Interaction")
+	TScriptInterface<IInteractionInterface> TargetInteractableActor;
+
+	FInteractionData InteractionData;
 };
