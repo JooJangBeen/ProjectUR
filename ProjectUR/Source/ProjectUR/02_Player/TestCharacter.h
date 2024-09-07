@@ -41,4 +41,10 @@ protected:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+
+public:
+	void TestNotifyFuc(int num);
+	void TestNotifyFuc2(int num);
+	UFUNCTION(BlueprintCallable, Category = "Example")
+	void MyBlueprintFunction(int32 Value);
 };
