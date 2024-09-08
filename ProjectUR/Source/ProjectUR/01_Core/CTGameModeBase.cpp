@@ -5,21 +5,60 @@
 #include "CTPlayerController.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
+#include "CTWorldSettings.h"
 #include "EnhancedInputSubsystems.h"
 
 ACTGameModeBase::ACTGameModeBase()
 {
-	static ConstructorHelpers::FClassFinder<APawn> TestCharacterClassRef(TEXT("/Script/ProjectUR.TestCharacter"));
-	
-	if (TestCharacterClassRef.Class)
+
+
+	ACTWorldSettings* WorldSettings = Cast<ACTWorldSettings>(GetWorldSettings());
+	if (WorldSettings)
 	{
-		DefaultPawnClass = TestCharacterClassRef.Class;
+		switch (WorldSettings->SelectedCharacter)
+		{
+		case ECharacterType::Kallari:
+		{
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.KallariCharacter"));
+			if (CharacterClassRef.Class)
+				DefaultPawnClass = CharacterClassRef.Class;
+		}
+			break;
+		case ECharacterType::Grim:
+		{
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.TestCharacter"));
+			if (CharacterClassRef.Class)
+				DefaultPawnClass = CharacterClassRef.Class;
+		}
+			break;
+		case ECharacterType::Narbash:
+		{
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.KallariCharacter"));
+			if (CharacterClassRef.Class)
+				DefaultPawnClass = CharacterClassRef.Class;
+		}
+			break;
+		case ECharacterType::Terra:
+		{
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.KallariCharacter"));
+			if (CharacterClassRef.Class)
+				DefaultPawnClass = CharacterClassRef.Class;
+		}
+			break;
+
+		default:
+			break;
+		}
 	}
 
 
 	PlayerControllerClass = ACTPlayerController::StaticClass();
 
 
+}
+
+void ACTGameModeBase::BeginPlay()
+{
 
 
 }
