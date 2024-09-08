@@ -34,12 +34,4 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void ABaseCharacter::Move(const FInputActionValue& Value)
-{
-}
-
-void ABaseCharacter::Look(const FInputActionValue& Value)
-{
-}
-
 
