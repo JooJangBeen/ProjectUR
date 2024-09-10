@@ -1,0 +1,21 @@
+엑셀을 CSV로 변환시켜주는데 파워쉘을 사용함
+다운로드 경로: https://apps.microsoft.com/detail/9mz1snwt0n5d?rtc=1&hl=ko-kr&gl=KR
+
+
+
+
+파이썬
+----------------------------------------
+IDE
+파이썬은 파이참을 사용
+PyCharm Community Edition 로 다운 받을것
+다운로드 경로: https://www.jetbrains.com/ko-kr/pycharm/download/?section=windows
+
+
+언리얼 플러그 인
+그리고 언리얼 파이썬 플러그인을 다운받고 파이썬 인터프리터를 내가 만든 프로젝트로 연결시켜야한다.
+
+
+파이썬 exe
+파이썬의 exe는 비주얼 스튜디오처럼 같이 빌드가 나오지 않으니깐
+PyInstaller 다운받고 파이참에 Tool에 기능을 넣어주면 된다.
