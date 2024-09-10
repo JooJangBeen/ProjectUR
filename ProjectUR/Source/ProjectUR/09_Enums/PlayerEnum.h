@@ -17,3 +17,6 @@ enum class ECharacterType : uint8
 	Narbash UMETA(DisplayName = "Narbash")
 };
 
+
+#define PLAYERDEFAULTCAMLENTH 250.f
+#define PLAYERDEFAULTCAMPOS FVector(0.f,90.f,90.f)

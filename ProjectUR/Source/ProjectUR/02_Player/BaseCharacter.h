@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "../09_Enums/PlayerEnum.h"
 #include "../04_Actor/01_InteractableActor/InteractionInterface.h"
 #include "BaseCharacter.generated.h"
 
