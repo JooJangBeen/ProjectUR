@@ -7,6 +7,7 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "../11_Manager/NotifyManager.h"
 
 
 
@@ -36,7 +37,7 @@ ATestCharacter::ATestCharacter()
 	GetMesh()->SetCollisionProfileName((TEXT("CharacterMesh")));
 
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/02_Player/99_Resources/ParagonKallari/Characters/Heroes/Kallari/Meshes/Kallari.Kallari'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/02_Player/99_Resources/ParagonKallari/Characters/Heroes/Kallari/Skins/Tough/Meshes/Kallari_Tough.Kallari_Tough'"));
 
 	if (CharacterMeshRef.Object)
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
@@ -71,7 +72,6 @@ ATestCharacter::ATestCharacter()
 
 
 
-
 }
 
 void ATestCharacter::BeginPlay()
@@ -100,6 +100,28 @@ void ATestCharacter::BeginPlay()
 	CollisionCapsule->OnComponentHit.AddDynamic(this, &ATestCharacter::TestCharacterOnHit);
 
 	InteractionData.CurrentInteractableActor = this;
+
+
+	auto NotifyMgr = GetGameInstance()->GetSubsystem<UNotifyManager>();
+
+	auto handle = NotifyMgr->OnExample.AddUObject(this, &ATestCharacter::TestNotifyFuc);
+	NotifyMgr->AddHandleExample(handle, TEXT("TestNotifyFuc"));
+
+	handle = NotifyMgr->OnExample.AddUObject(this, &ATestCharacter::TestNotifyFuc);
+	NotifyMgr->AddHandleExample(handle, TEXT("TestNotifyFuc"));
+
+	handle = NotifyMgr->OnExample.AddUObject(this, &ATestCharacter::TestNotifyFuc2);
+	NotifyMgr->AddHandleExample(handle, TEXT("TestNotifyFuc2"));
+
+	handle = NotifyMgr->OnExample.AddUFunction(this, TEXT("MyBlueprintFunction"));
+	NotifyMgr->AddHandleExample(handle, TEXT("MyBlueprintFunction"));
+
+
+	//NotifyMgr->RemoveExample(TEXT("TestNotifyFuc"));
+	//NotifyMgr->RemoveExample(TEXT("TestNotifyFuc"));
+	//NotifyMgr->RemoveExample(TEXT("TestNotifyFuc2"));
+	//NotifyMgr->RemoveExample(TEXT("MyBlueprintFunction"));
+
 }
 
 void ATestCharacter::Tick(float DeltaSeconds)
@@ -156,6 +178,7 @@ void ATestCharacter::TestCharacterOnOverlapBegin(UPrimitiveComponent* Overlapped
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Overlaped");
+		GetGameInstance()->GetSubsystem<UNotifyManager>()->NotifyExample(34);
 	}
 }
 
@@ -165,6 +188,7 @@ void ATestCharacter::TestCharacterOnHit(UPrimitiveComponent* HitComp, AActor* Ot
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "blocked");
 	}
+	
 }
 
 void ATestCharacter::PerformRaycastCheck()
@@ -237,4 +261,30 @@ void ATestCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 {
 	InteractionData.CurrentInteractableActor = nullptr;
 	TargetInteractableActor = nullptr;
+}
+
+void ATestCharacter::TestNotifyFuc(int num)
+{
+	FString NumString = FString::Printf(TEXT("num: %d"), num);
+
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString("TestNotifyFuc") + NumString);
+
+}
+
+void ATestCharacter::TestNotifyFuc2(int num)
+{
+	num++;
+	FString NumString = FString::Printf(TEXT("num: %d"), num);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString("TestNotifyFuc") + NumString);
+}
+
+void ATestCharacter::MyBlueprintFunction(int32 Value)
+{
+	Value++;
+	Value++;
+	FString NumString = FString::Printf(TEXT("num: %d"), Value);
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString("MyBlueprintFunction") + NumString);
 }

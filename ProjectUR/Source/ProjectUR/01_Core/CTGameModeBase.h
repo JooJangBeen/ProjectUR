@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "InputActionValue.h"
+#include "../09_Enums/PlayerEnum.h"
 #include "CTGameModeBase.generated.h"
 
 /**
  * 
  */
+
+
 UCLASS()
 class PROJECTUR_API ACTGameModeBase : public AGameModeBase
 {
@@ -17,5 +20,8 @@ class PROJECTUR_API ACTGameModeBase : public AGameModeBase
 
 public:
 	ACTGameModeBase();
+
+public:
+	virtual void BeginPlay() override;
 
 };
