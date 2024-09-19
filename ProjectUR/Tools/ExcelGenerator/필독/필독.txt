@@ -19,3 +19,10 @@ PyCharm Community Edition 로 다운 받을것
 파이썬 exe
 파이썬의 exe는 비주얼 스튜디오처럼 같이 빌드가 나오지 않으니깐
 PyInstaller 다운받고 파이참에 Tool에 기능을 넣어주면 된다.
+
+
+
+
+경로 설정
+----------------------------------------
+BatchFileInfo.bat과 CreateStruct.py에 경로 설정 해줘야함
