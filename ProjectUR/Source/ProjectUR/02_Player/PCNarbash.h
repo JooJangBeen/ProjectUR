@@ -29,6 +29,7 @@ protected:
 	virtual void StopJumping() override;
 
 	void NormalAttack();
+	void Skill1Attack();
 
 private:
 	void InitMappingContextSetting();
@@ -53,6 +54,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> NormalAttackAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> Skill1Action;
 
 private:
 	float MoveForwardInput;

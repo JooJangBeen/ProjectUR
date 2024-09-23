@@ -27,4 +27,7 @@ public:
 	UFUNCTION()
 	virtual void EndLoadingScreen(FName openLevelPath);
 
+	UFUNCTION()
+	virtual void EndLoading();
+
 };

@@ -8,6 +8,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
 DECLARE_MULTICAST_DELEGATE(FOnNextComboCheck);
+DECLARE_MULTICAST_DELEGATE(FOnSkill1End);
 
 /**
  * 
@@ -28,8 +29,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
 	UAnimMontage* NormalAttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
+	UAnimMontage* Skiil1Montage;
+
 public:
 	void PlayNormalAttackMontage(uint8 curComboCombo);
+	void PlaySkill1Montage();
 
 public:
 	UFUNCTION()
@@ -38,10 +43,14 @@ public:
 	UFUNCTION()
 	void AnimNotify_NextComboCheck();
 
+	UFUNCTION()
+	void AnimNotify_Skill1End();
+
 public:
 	/* Anim Notify */
 	FOnAttackEnd		OnAttackEnd;
 	FOnNextComboCheck	OnNextComboCheck;
+	FOnSkill1End		OnSkill1End;
 
 private:
 	/* Player Info Value */

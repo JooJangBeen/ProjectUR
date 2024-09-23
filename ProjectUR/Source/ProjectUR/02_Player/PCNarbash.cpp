@@ -61,7 +61,9 @@ void APCNarbash::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APCNarbash::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APCNarbash::StopJumping);
+		
 		EnhancedInputComponent->BindAction(NormalAttackAction, ETriggerEvent::Started, this, &APCNarbash::NormalAttack);
+		EnhancedInputComponent->BindAction(Skill1Action, ETriggerEvent::Started, this, &APCNarbash::Skill1Attack);
 	}
 }
 
@@ -85,6 +87,10 @@ void APCNarbash::SetupNotifys()
 			bPressAttack = false;
 			PCAnimInstance->PlayNormalAttackMontage(CurCombo);
 		}
+	});
+
+	PCAnimInstance->OnSkill1End.AddLambda([this]()->void {
+		IsAttacking = false;
 	});
 
 }
@@ -150,6 +156,16 @@ void APCNarbash::NormalAttack()
 	
 }
 
+void APCNarbash::Skill1Attack()
+{
+	if (!IsAttacking)
+	{
+		PCAnimInstance->PlaySkill1Montage();
+		IsAttacking = true;
+	}
+
+}
+
 void APCNarbash::InitMappingContextSetting()
 {
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IM_ContextAsset(TEXT("/Game/05_Input/00_PCNarbash/MappingContext/IM_PCNarbashDefault.IM_PCNarbashDefault"));
@@ -180,6 +196,12 @@ void APCNarbash::InitMappingContextSetting()
 	if (IA_NormalAttackAsset.Succeeded())
 	{
 		NormalAttackAction = IA_NormalAttackAsset.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_Skill1Asset(TEXT("/Game/05_Input/00_PCNarbash/InputAction/IA_PCNarbash_Skill1.IA_PCNarbash_Skill1"));
+	if (IA_Skill1Asset.Succeeded())
+	{
+		Skill1Action = IA_Skill1Asset.Object;
 	}
 
 }

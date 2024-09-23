@@ -41,6 +41,11 @@ void UPCNarbashAnimInstance::PlayNormalAttackMontage(uint8 curCombo)
 
 }
 
+void UPCNarbashAnimInstance::PlaySkill1Montage()
+{
+	Montage_Play(Skiil1Montage);
+}
+
 void UPCNarbashAnimInstance::AnimNotify_AttackEnd()
 {
 	OnAttackEnd.Broadcast();
@@ -50,5 +55,11 @@ void UPCNarbashAnimInstance::AnimNotify_AttackEnd()
 void UPCNarbashAnimInstance::AnimNotify_NextComboCheck()
 {
 	OnNextComboCheck.Broadcast();
+
+}
+
+void UPCNarbashAnimInstance::AnimNotify_Skill1End()
+{
+	OnSkill1End.Broadcast();
 
 }
