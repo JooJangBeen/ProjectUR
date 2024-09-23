@@ -20,12 +20,12 @@ protected:
 
 public:
 	//배경음악 재생
-	void PlayBackGroundMusic(USoundCue* musicCue, float fadeinDuration = 0.5f);
+	void PlayBackGroundMusic(USoundBase* music, float fadeinDuration = 0.5f);
 
 	//SFX사운드 재생
-	void PlaySFX(USoundCue* sfxMusicCue, float volume = 1.0f);
+	void PlaySFX(USoundBase* sfxMusic, AActor* actor);
 	//UI사운드 재생
-	void PlayUISound(USoundCue* uiSoundCue, float volume = 1.0f);
+	void PlayUISound(USoundBase* uiSound);
 
 
 	void SetBackGroundMusicVolume(float volume);
@@ -35,6 +35,9 @@ public:
 	void FadeOutBackGroundMusic(float fadeOutDuration);
 	void FadeInBackGroundMusic(float fadeInDuration);
 
+	void RemoveSFXSound(USoundBase* sfxSoundBase);
+	void RemoveUISound(USoundBase* uiSoundBase);
+
 private:
 	
 	float mSfxVolume = 1.0f;
@@ -43,5 +46,8 @@ private:
 
 	UPROPERTY()
 	UAudioComponent* mCurrentBackGroundMusic;
+
+	TMap<USoundBase*, UAudioComponent*> mSfxSoundMap;
+	TMap<USoundBase*, UAudioComponent*> mUiSoundMap;
 	
 };
