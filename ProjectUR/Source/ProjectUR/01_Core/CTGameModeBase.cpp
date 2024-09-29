@@ -40,7 +40,7 @@ ACTGameModeBase::ACTGameModeBase()
 			break;
 		case ECharacterType::Terra:
 		{
-			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.KallariCharacter"));
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.TeraCharacter"));
 			if (CharacterClassRef.Class)
 				DefaultPawnClass = CharacterClassRef.Class;
 		}

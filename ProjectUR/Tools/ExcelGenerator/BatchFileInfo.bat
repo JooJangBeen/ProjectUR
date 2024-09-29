@@ -1,10 +1,10 @@
 @echo off
 
 REM 언리얼 엔진 경로 설정
-set UE5_PATH="C:\Program Files\Epic Games\UE_5.4"
+set UE5_PATH="C:\UnRealTest\UnrealEngine-release"
 
 REM 언리얼 프로젝트 경로
-set PROJECT_PATH=C:\UnrealProject\ProjectUR\ProjectUR\
+set PROJECT_PATH=C:\UnRealTest\ProjectUR\ProjectUR\
 
 REM 배치파일 현재 경로
 set BATCH_PATH=%CD%
