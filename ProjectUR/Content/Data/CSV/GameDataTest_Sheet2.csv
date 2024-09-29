@@ -1,5 +1,5 @@
-int,string,string
-Level,Class,Description
-1,도적,칼을 든 도적
-2,전사,쌍 방패
-3,마법사,총을 든 마법사
+int,int,string,string
+ID,Level,Class,Description
+1,1,도적,칼을 든 도적
+2,2,전사,쌍 방패
+3,3,마법사,총을 든 마법사

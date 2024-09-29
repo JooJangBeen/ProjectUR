@@ -7,10 +7,10 @@ import subprocess
 project_name = "ProjectUR"
 
 # CSV 파일이 존재하는 폴더 경로
-csv_folder = "C:/UnrealProject/ProjectUR/ProjectUR/" + "Content/" + "Data/" + "CSV"
+csv_path = "Content/" + "Data/" + "CSV"
 
 # c++ struct 를 저장할 폴더 경로 ->
-struct_save_folder = "C:/UnrealProject/ProjectUR/ProjectUR/" + "Source/" + project_name + "/14_Data"
+struct_save_path = "Source/" + project_name + "/14_Data"
 
 #############################################Create Struct######################################################
 # 개행 함수
@@ -44,6 +44,39 @@ def get_unreal_type(type):
 
 # 스크립트 작성 함수
 def create_struct():
+    print("####### CSV와 C++의 경로를 지정하기 위해 추가된 코드 ####### ")
+    # 현재 폴더 경로; 작업 폴더 기준
+
+    #PyInstaller같은 도구로 실행 파일을 만들경우 파이썬 exe 파일 경로는 여기 os.path.dirname(sys.executable)
+    #도구를 사용하여 배포하지 않고 일반 파이썬 파일의 경로는 여기 os.path.dirname(os.path.realpath(__file__))
+
+    # 현재 스크립트의 경로를 가져옴
+    current_path = os.path.dirname(sys.executable)
+
+    # 제거할 문자열
+    target_string = r"Tools\ExcelGenerator\ExcelGenerator\dist"
+
+    # 경로에 target_string이 포함되어 있는지 확인하고 제거
+    if target_string in current_path:
+        # target_string이 나타나는 위치까지 경로를 잘라냄
+        new_path = current_path.replace(target_string, "").rstrip(os.sep)
+
+        # 경로 구분자가 없는 경우 추가
+        if not new_path.endswith(os.sep):
+            new_path += os.sep
+
+        # 경로의 모든 '\'를 '/'로 변환
+        new_path = new_path.replace("\\", "/")
+
+        print("수정된 경로:", new_path)
+    else:
+        new_path = current_path
+        print("문자열을 찾을 수 없습니다.")
+
+    # 현재 파일의 폴더 경로; 작업 파일 기준
+    csv_folder = new_path + csv_path
+    struct_save_folder = new_path + struct_save_path
+
     print("#######   Data Table C++ Struct Generator Started!     #######")
     print("######    Target CSV Folder : " + csv_folder)
     print("-")
