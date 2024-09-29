@@ -11,12 +11,13 @@ ABaseCharacter::ABaseCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
-	CameraBoom->SetRelativeLocation(PLAYERDEFAULTCAMPOS);
+	//CameraBoom->SetRelativeLocation(PLAYERDEFAULTCAMPOS);
 	CameraBoom->bUsePawnControlRotation = true;
 
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->SetRelativeLocation(PLAYERDEFAULTCAMPOS);
 	FollowCamera->bUsePawnControlRotation = false;
 
 

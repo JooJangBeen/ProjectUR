@@ -61,4 +61,22 @@ protected:
 	TObjectPtr<class UInputAction> SkillAHAAction;
 
 
+//=====================================================================================
+// For Animation Control
+//=====================================================================================
+public:
+	float GetMoveForwardInput() {	return MoveForwardInput;};
+	float GetMoveRightInput() { return MoveRightInput; };
+	int32 GetJumpCount() { return JumpCurrentCount; };
+	bool GetIsTurn() { return bIsTurn; };
+
+private:
+	FVector2D OldDirVector;
+
+	float MoveForwardInput;
+	float MoveRightInput;
+
+	bool IsAttacking;
+	bool bPressAttack;
+	bool bIsTurn;
 };
