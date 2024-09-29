@@ -8,7 +8,10 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
 DECLARE_MULTICAST_DELEGATE(FOnNextComboCheck);
-DECLARE_MULTICAST_DELEGATE(FOnSkill1End);
+DECLARE_MULTICAST_DELEGATE(FOnSkillOneEnd);
+DECLARE_MULTICAST_DELEGATE(FOnSkillTwoStart);
+DECLARE_MULTICAST_DELEGATE(FOnSkillTwoEnd);
+DECLARE_MULTICAST_DELEGATE(FOnThrowStick);
 
 /**
  * 
@@ -19,22 +22,32 @@ class PROJECTUR_API UPCNarbashAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
-	UPCNarbashAnimInstance();
-
-public:
+	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float deltaTime) override;
 
 private:
 	/* Anim Montage */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
-	UAnimMontage* NormalAttackMontage;
+	TObjectPtr<UAnimMontage> NormalAttackMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
-	UAnimMontage* Skiil1Montage;
+	TObjectPtr<UAnimMontage> SkillOneMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAnimMontage> SkillTwoMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAnimMontage> DashMontage;
 
 public:
 	void PlayNormalAttackMontage(uint8 curComboCombo);
-	void PlaySkill1Montage();
+	void ReadySkillOneMontage();
+	void PlaySkillOneMontage();
+	void StopSkillOneMontage();
+	void ReadySkillTwoMontage();
+	void StopSkillTwoMontage();
+	void PlayDashMontage(float AnimPlayRate = 1.f);
+	void StopDashMontage();
 
 public:
 	UFUNCTION()
@@ -44,13 +57,25 @@ public:
 	void AnimNotify_NextComboCheck();
 
 	UFUNCTION()
-	void AnimNotify_Skill1End();
+	void AnimNotify_SkillOneEnd();
+
+	UFUNCTION()
+	void AnimNotify_SkillTwoStart();
+
+	UFUNCTION()
+	void AnimNotify_SkillTwoEnd();
+
+	UFUNCTION()
+	void AnimNotify_ThrowStick();
 
 public:
 	/* Anim Notify */
 	FOnAttackEnd		OnAttackEnd;
 	FOnNextComboCheck	OnNextComboCheck;
-	FOnSkill1End		OnSkill1End;
+	FOnSkillOneEnd		OnSkillOneEnd;
+	FOnSkillTwoStart	OnSkillTwoStart;
+	FOnSkillTwoEnd		OnSkillTwoEnd;
+	FOnThrowStick		OnThrowStick;
 
 private:
 	/* Player Info Value */
@@ -74,5 +99,11 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", Meta = (AllowPrivateAccess = true))
 	float AimPitch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", Meta = (AllowPrivateAccess = true))
+	bool IsOnTransPitchBone;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", Meta = (AllowPrivateAccess = true))
+	bool IsOnTransYawBone;
 
 };
