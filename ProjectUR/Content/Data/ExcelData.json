@@ -13,6 +13,31 @@
                    ]
     },
     {
+        "ExcelFileName":  "LevelUpCard.xlsx",
+        "Sheets":  [
+                       {
+                           "CsvFileName":  "LevelUpCard_Public_Card.csv",
+                           "SheetName":  "LevelUpCard_Public_Card"
+                       },
+                       {
+                           "CsvFileName":  "LevelUpCard_Kallari.csv",
+                           "SheetName":  "LevelUpCard_Kallari"
+                       },
+                       {
+                           "CsvFileName":  "LevelUpCard_Grim.csv",
+                           "SheetName":  "LevelUpCard_Grim"
+                       },
+                       {
+                           "CsvFileName":  "LevelUpCard_Narbash.csv",
+                           "SheetName":  "LevelUpCard_Narbash"
+                       },
+                       {
+                           "CsvFileName":  "LevelUpCard_Terra.csv",
+                           "SheetName":  "LevelUpCard_Terra"
+                       }
+                   ]
+    },
+    {
         "ExcelFileName":  "PlayerInfo.xlsx",
         "Sheets":  [
                        {

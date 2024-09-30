@@ -11,7 +11,6 @@ ABaseCharacter::ABaseCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
-	//CameraBoom->SetRelativeLocation(PLAYERDEFAULTCAMPOS);
 	CameraBoom->bUsePawnControlRotation = true;
 
 

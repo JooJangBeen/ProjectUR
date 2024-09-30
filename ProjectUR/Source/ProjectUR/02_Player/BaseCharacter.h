@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "../09_Enums/PlayerEnum.h"
 #include "../04_Actor/01_InteractableActor/InteractionInterface.h"
+#include "LevelUpCardData.h"
 #include "BaseCharacter.generated.h"
 
 USTRUCT()
@@ -29,7 +30,7 @@ struct FInteractionData
 
 
 UCLASS()
-class PROJECTUR_API ABaseCharacter : public ACharacter
+class PROJECTUR_API ABaseCharacter : public ACharacter, public CLevelUpCardData
 {
 	GENERATED_BODY()
 
@@ -72,4 +73,6 @@ protected:
 	TScriptInterface<IInteractionInterface> TargetInteractableActor;
 
 	FInteractionData InteractionData;
+
+
 };

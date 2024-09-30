@@ -12,10 +12,10 @@
 
 AKallariCharacter::AKallariCharacter()
 {
-
 	SetupDefault();
 	LoadMeshAnimation();
 	LoadEnhancedInput();
+	InitializeCardData(ECharacterType::Kallari);
 }
 
 void AKallariCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -56,7 +56,7 @@ void AKallariCharacter::SetupDefault()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 
-	//CameraBoom->SetRelativeLocation(FVector(-20.f, 40.f, 70.f));
+	FollowCamera->SetRelativeLocation(FVector(-20.f, 40.f, 70.f));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
@@ -86,27 +86,27 @@ void AKallariCharacter::LoadMeshAnimation()
 void AKallariCharacter::LoadEnhancedInput()
 {
 	//Load Mapping Context
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/Kallari/IM_KallariDefault.IM_KallariDefault'"));
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/01_Kallari/IM_KallariDefault.IM_KallariDefault'"));
 	if (InputMappingContextRef.Object)
 		DefaultMappingContext = InputMappingContextRef.Object;
 
 	//Load Input Action
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariJump.IA_KallariJump'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariJump.IA_KallariJump'"));
 	if (nullptr != InputActionJumpRef.Object)
 		JumpAction = InputActionJumpRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariMove.IA_KallariMove'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariMove.IA_KallariMove'"));
 	if (nullptr != InputActionMoveRef.Object)
 		MoveAction = InputActionMoveRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariLook.IA_KallariLook'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariLook.IA_KallariLook'"));
 	if (nullptr != InputActionLookRef.Object)
 		LookAction = InputActionLookRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillEDRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariSkillED.IA_KallariSkillED'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillEDRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillED.IA_KallariSkillED'"));
 	if (nullptr != InputActionSkillEDRef.Object)
 		SkillEDAction = InputActionSkillEDRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillSSBRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariSkillSSB.IA_KallariSkillSSB'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillSSBRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillSSB.IA_KallariSkillSSB'"));
 	if (nullptr != InputActionSkillSSBRef.Object)
 		SkillSSBAction = InputActionSkillSSBRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillAHARef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/Kallari/InputAction/IA_KallariSkillAHA.IA_KallariSkillAHA'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillAHARef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillAHA.IA_KallariSkillAHA'"));
 	if (nullptr != InputActionSkillAHARef.Object)
 		SkillAHAAction = InputActionSkillAHARef.Object;
 

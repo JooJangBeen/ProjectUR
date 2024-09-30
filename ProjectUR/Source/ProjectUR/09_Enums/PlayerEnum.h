@@ -12,9 +12,9 @@ UENUM(BlueprintType)
 enum class ECharacterType : uint8
 {
 	Kallari UMETA(DisplayName = "Kallari"),
-	Terra UMETA(DisplayName = "Terra"),
 	Grim UMETA(DisplayName = "GRIM.exe"),
-	Narbash UMETA(DisplayName = "Narbash")
+	Narbash UMETA(DisplayName = "Narbash"),
+	Terra UMETA(DisplayName = "Terra")
 };
 
 

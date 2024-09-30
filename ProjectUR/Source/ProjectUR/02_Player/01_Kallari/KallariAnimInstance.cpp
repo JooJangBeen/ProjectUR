@@ -40,8 +40,8 @@ void UKallariAnimInstance::NativeUpdateAnimation(float deltaTime)
 		AimPitch = Rot.Pitch;
 		AimYaw = NormalizeYaw(Rot.Yaw);
 
-		FString tt = "AimPitch : " + FString::SanitizeFloat(AimPitch) + "AimYaw : " + FString::SanitizeFloat(AimYaw);
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, tt);
+		//FString tt = "AimPitch : " + FString::SanitizeFloat(AimPitch) + "AimYaw : " + FString::SanitizeFloat(AimYaw);
+		//GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, tt);
 	}
 
 }
