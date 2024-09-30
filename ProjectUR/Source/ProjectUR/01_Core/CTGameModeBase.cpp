@@ -26,7 +26,7 @@ ACTGameModeBase::ACTGameModeBase()
 			break;
 		case ECharacterType::Grim:
 		{
-			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.TestCharacter"));
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Game/02_Player/02_Grim/BP_Grim.BP_Grim_C"));
 			if (CharacterClassRef.Class)
 				DefaultPawnClass = CharacterClassRef.Class;
 		}
