@@ -22,6 +22,7 @@ REM .uproject 파일 경로 설정
 set PROJECT_PATH="C:\UnrealProject\ProjectUR\ProjectUR\ProjectUR.uproject"
 
 call ExcelToCsv.bat
+ExcelGenerator\dist\CreateStruct.exe CreateStruct.py
 call UnrealBuildTool.bat
 
 
