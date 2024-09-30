@@ -32,4 +32,38 @@ void SetupDefault();
 void LoadMeshAnimation();
 void LoadEnhancedInput();
 void BindInputAction2Fuction(UInputComponent* PlayerInputComponent);
+
+//=====================================================================================
+// Input
+//=====================================================================================
+protected:
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void LeftButton(const FInputActionValue& Value);
+	void RightButton(const FInputActionValue& Value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> JumpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> MoveAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> LookAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> LeftButtonAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
+	TObjectPtr<class UInputAction> RightButtonAction;
+
+private:
+	FVector2D OldDirVector;
+
+	float MoveForwardInput;
+	float MoveRightInput;
+
+	bool IsAttacking;
+	bool bPressAttack;
+	bool bIsTurn;
 };
