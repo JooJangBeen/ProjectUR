@@ -33,7 +33,7 @@ ACTGameModeBase::ACTGameModeBase()
 			break;
 		case ECharacterType::Narbash:
 		{
-			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Script/ProjectUR.KallariCharacter"));
+			static ConstructorHelpers::FClassFinder<APawn> CharacterClassRef(TEXT("/Game/02_Player/04_PCNarbash/BP_PCNarbash.BP_PCNarbash_C"));
 			if (CharacterClassRef.Class)
 				DefaultPawnClass = CharacterClassRef.Class;
 		}

@@ -31,6 +31,7 @@ CLevelUpCardData::CLevelUpCardData()
 	static ConstructorHelpers::FObjectFinder<UDataTable> TerraCardDatatable(TEXT("/Game/Data/Table/DT_LevelUpCard_Terra.DT_LevelUpCard_Terra"));
 	if (TerraCardDatatable.Succeeded())
 		CardDTArray.Add(TerraCardDatatable.Object);
+
 }
 
 CLevelUpCardData::~CLevelUpCardData()

@@ -9,6 +9,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Math.h"
+
 
 AKallariCharacter::AKallariCharacter()
 {
@@ -56,9 +58,11 @@ void AKallariCharacter::SetupDefault()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 
+
+
 	FollowCamera->SetRelativeLocation(FVector(-20.f, 40.f, 70.f));
 
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
@@ -129,19 +133,32 @@ void AKallariCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	MoveForwardInput = MovementVector.Y;
-	MoveRightInput = MovementVector.X;
+	
+
+	FVector ForwardDirection = FollowCamera->GetForwardVector().GetSafeNormal();;
+	FVector RightDirection = FollowCamera->GetRightVector().GetSafeNormal(); 
+
+	MoveForwardInput = MovementVector.X;
+	MoveRightInput = MovementVector.Y;
+
+	FRotator ControlRot = GetControlRotation();
 
 
-	AddMovementInput(ForwardDirection, MovementVector.X);
-	AddMovementInput(RightDirection, MovementVector.Y);
+	FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw , GetActorRotation().Yaw) * 0.2f), 0);
+	
 
+	// 카메라 방향으로 캐릭터 회전
+	FQuat QuatRotation = FQuat(YawRotation);
+	SetActorRotation(QuatRotation);
+
+	AddMovementInput(RightDirection, MovementVector.X);
+	AddMovementInput(ForwardDirection, MovementVector.Y);
 
 
 	bIsTurn = ( FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0 )? true: false;
@@ -152,8 +169,6 @@ void AKallariCharacter::Move(const FInputActionValue& Value)
 void AKallariCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	
 
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(-LookAxisVector.Y);
@@ -172,3 +187,44 @@ void AKallariCharacter::Skill_AHA(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Annihilation");
 }
+
+float AKallariCharacter::NormalizeYaw(float Yaw)
+{
+	while (Yaw >= 360.f) Yaw -= 360.0f;
+	while (Yaw < 0) Yaw += 360.0f;
+	return Yaw;
+}
+
+float AKallariCharacter::CalculateYaw(float DestYaw, float SourYaw)
+{
+	float NLDest = NormalizeYaw(DestYaw);
+	float NLSour = NormalizeYaw(SourYaw);
+
+	float Result = NLDest - NLSour;
+	float a, b;
+	a = NLDest - 360.f - NLSour;
+	b = NLDest + 360.f - NLSour;
+
+	if (fabsf(Result) > 180.f)
+	{
+		if (fabsf(Result) < fabsf(a))
+		{
+			if (fabsf(Result) < fabsf(b))
+				return Result;
+			else
+				return b;
+		}
+		else
+		{
+
+			if (fabsf(a) < fabsf(b))
+				return a;
+			else
+				return b;
+		}
+	}
+
+
+	return Result;
+}
+

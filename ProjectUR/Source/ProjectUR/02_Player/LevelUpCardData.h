@@ -10,6 +10,7 @@
 
 class PROJECTUR_API CLevelUpCardData
 {
+public:
 	typedef void(CLevelUpCardData::* CardImplementFuction)();
 	struct FCardData
 	{

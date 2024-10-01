@@ -5,6 +5,7 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "../11_Manager/Managers.h"
 
 
 ACTPlayerController::ACTPlayerController()
@@ -16,6 +17,8 @@ ACTPlayerController::ACTPlayerController()
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/TestPlayerIA/IA_TestWorld.IA_TestWorld'"));
 	if (nullptr != InputActionRef.Object)
 		WorldKeyAction = InputActionRef.Object;
+
+
 }
 
 void ACTPlayerController::BeginPlay()
@@ -27,6 +30,7 @@ void ACTPlayerController::BeginPlay()
 
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 		Subsystem->AddMappingContext(DefaultMappingContext, 2e9);
+
 
 }
 
@@ -43,7 +47,9 @@ void ACTPlayerController::SetupInputComponent()
 
 void ACTPlayerController::FucTestWorldKey(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "WorldKeyInput");
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "UITestInput");
+	GetMgr(UUIManager)->TurnAddRemove_UserWidgetGroup("LevelUpCardUIGroup");
+	
 }
 
 
