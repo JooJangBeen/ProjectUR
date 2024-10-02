@@ -41,6 +41,8 @@ private:
 	TObjectPtr<class UBorder> CardIcon;
 	UPROPERTY()
 	TObjectPtr<class UButton> Button;
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> Level;
 	
 private:
 	void PrepareWidget();

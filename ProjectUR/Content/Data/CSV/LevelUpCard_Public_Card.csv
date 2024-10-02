@@ -1,7 +1,11 @@
-String,String,String
-iD,CardName,SkillCardDesc
-0,HP 증가,최대 HP가 증가합니다.
-1,이동속도 증가,이동 속도가 증가합니다.
-2,기본 공격속도 증가,기본 공격 속도가 증가합니다.
-3,경험치 증가량,경험치 증가량이 증가합니다.
-4,HP 회복,HP를 최대로 회복합니다.
+String,String,String,int,int,string,float,float,float
+iD,CardName,SkillCardDesc,UseIconNum,SkillIconChangeLevelInterval,IconRef,IconColor_R,IconColor_G,IconColor_B
+0,HP 증가,최대 HP가 증가합니다.,4,2,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_111_01.Tex_skillicon_111_01',0.84,0.3,0.73
+1,이동속도 증가,이동 속도가 증가합니다.,4,1,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_216_01.Tex_skillicon_216_01',0.87,0.102,0.255
+2,기본 공격속도 증가,기본 공격 속도가 증가합니다.,4,3,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_16_01.Tex_skillicon_16_01',0.252,0.202,0.15
+3,경험치 증가량,경험치 증가량이 증가합니다.,4,2,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_234_01.Tex_skillicon_234_01',0.174,0.149,0.188
+4,HP 회복,HP를 최대로 회복합니다.,1,0,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_153_01.Tex_skillicon_153_01',0.63,0.106,0.94
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,

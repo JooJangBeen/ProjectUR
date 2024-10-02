@@ -21,6 +21,13 @@ public:
 		FString CardName;
 		FString SkillCardDesc;
 
+		FString IconRef = "";
+		FString SubIconRef = "";
+
+		int8 UseIconNum;
+		int8 IconChangeLevelInterval;
+		int8* CardLevel;
+		FLinearColor IconColor;
 	};
 
 public:
@@ -31,6 +38,9 @@ public:
 	int8 GetTotalCardNum() { return FunctionsArray.Num(); };
 	int8 GetTotalPublicCardNum() {	return TotalPublicCardNum; };
 	int8 GetTotalCharacterCardNum() { return TotalCharacterCardNum; };
+	const int8& GetCardLevel(int8 index) {return *FunctionsArray[index].CardLevel;};
+	FString GetSkillIconRef(int8 index);
+	FLinearColor GetSkillIconColor(int8 index) { return FunctionsArray[index].IconColor; };
 	void ImplementCard(int8 index);
 	const FCardData& GetCardData(int8 index);
 
@@ -89,11 +99,21 @@ protected:
 #pragma endregion
 
 	//==================================================================================
+	// LevelUpCard Level
+	//==================================================================================
+protected:
+	TArray<int8> PublicCardLevel;
+	TArray<int8> CharacterCardLevel;
+
+	//==================================================================================
 	// Valiable
 	//==================================================================================
 protected:
 	TArray<FCardData> FunctionsArray;
 	TArray<UDataTable*> CardDTArray;
-	int8 TotalPublicCardNum;
-	int8 TotalCharacterCardNum;
+	int8 TotalPublicCardNum = 0;
+	int8 TotalCharacterCardNum = 0;
+
+private:
+	FString ModifyTexturePath(const FString& OriginalPath, int8 UseIconNum, FCardData& CardData);
 };

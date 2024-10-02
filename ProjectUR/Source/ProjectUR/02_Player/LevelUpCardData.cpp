@@ -7,11 +7,17 @@
 #include "../14_Data/FLevelUpCard_Grim.h"
 #include "../14_Data/FLevelUpCard_Narbash.h"
 #include "../14_Data/FLevelUpCard_Terra.h"
+#include "Math/UnrealMathUtility.h"
+
 
 
 
 CLevelUpCardData::CLevelUpCardData()
 {
+	PublicCardLevel.Init(1, 20);
+	CharacterCardLevel.Init(1, 20);
+
+
 	static ConstructorHelpers::FObjectFinder<UDataTable> PublicCardDatatable(TEXT("/Game/Data/Table/DT_LevelUpCard_Public_Card.DT_LevelUpCard_Public_Card"));
 	if (PublicCardDatatable.Succeeded())
 		CardDTArray.Add(PublicCardDatatable.Object);
@@ -36,6 +42,21 @@ CLevelUpCardData::CLevelUpCardData()
 
 CLevelUpCardData::~CLevelUpCardData()
 {
+}
+
+
+FString CLevelUpCardData::GetSkillIconRef(int8 index)
+{
+	if (FunctionsArray[index].UseIconNum < 2)
+		return FunctionsArray[index].IconRef;
+
+	int TargetNum = FMath::CeilToInt(*FunctionsArray[index].CardLevel / float(FunctionsArray[index].IconChangeLevelInterval));
+	TargetNum = (TargetNum > FunctionsArray[index].UseIconNum) ? FunctionsArray[index].UseIconNum : TargetNum;
+	
+
+	FString Path = FunctionsArray[index].IconRef+ FunctionsArray[index].SubIconRef + FString::Printf(TEXT("%02d."), TargetNum) + FunctionsArray[index].SubIconRef+ FString::Printf(TEXT("%02d'"), TargetNum);
+	UE_LOG(LogTemp, Error, TEXT("%s"), *Path);
+	return Path;
 }
 
 void CLevelUpCardData::ImplementCard(int8 index)
@@ -70,6 +91,7 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 		&CLevelUpCardData::CharaterCardImplement_15,&CLevelUpCardData::CharaterCardImplement_16,&CLevelUpCardData::CharaterCardImplement_17,&CLevelUpCardData::CharaterCardImplement_18,&CLevelUpCardData::CharaterCardImplement_19,
 	};
 
+
 	TArray<FName> RowNames = CardDTArray[0]->GetRowNames();
 	int Index = 0;
 
@@ -78,9 +100,15 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 	{
 		FLevelUpCard_Public_Card* DataTableRow = CardDTArray[0]->FindRow<FLevelUpCard_Public_Card>(FName(RowName), FString(""));
 
-		CardData.CardName = *DataTableRow->CardName;
-		CardData.SkillCardDesc = *DataTableRow->SkillCardDesc;
+		CardData.CardName = DataTableRow->CardName;
+		CardData.SkillCardDesc = DataTableRow->SkillCardDesc;
 		CardData.Implement = AllPublicCardFunctions[Index++];
+
+		CardData.UseIconNum = DataTableRow->UseIconNum;
+		CardData.IconRef = ModifyTexturePath(DataTableRow->IconRef, CardData.UseIconNum, CardData);
+		CardData.IconChangeLevelInterval = DataTableRow->SkillIconChangeLevelInterval;
+		CardData.CardLevel = &PublicCardLevel[Index];
+		CardData.IconColor = FLinearColor(DataTableRow->IconColor_R, DataTableRow->IconColor_G, DataTableRow->IconColor_B);
 
 		FunctionsArray.Add(CardData);
 	}
@@ -99,6 +127,13 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 			CardData.CardName = *DataTableRow->CardName;
 			CardData.SkillCardDesc = *DataTableRow->SkillCardDesc;
 			CardData.Implement = AllCharaterCardFunctions[Index++];
+
+			CardData.UseIconNum = DataTableRow->UseIconNum;
+			CardData.IconRef = ModifyTexturePath(DataTableRow->IconRef, CardData.UseIconNum, CardData);
+			CardData.IconChangeLevelInterval = DataTableRow->SkillIconChangeLevelInterval;
+			CardData.CardLevel = &CharacterCardLevel[Index];
+			CardData.IconColor = FLinearColor(DataTableRow->IconColor_R, DataTableRow->IconColor_G, DataTableRow->IconColor_B);
+
 			FunctionsArray.Add(CardData);
 		}
 			break;
@@ -110,6 +145,13 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 			CardData.CardName = *DataTableRow->CardName;
 			CardData.SkillCardDesc = *DataTableRow->SkillCardDesc;
 			CardData.Implement = AllCharaterCardFunctions[Index++];
+
+			CardData.UseIconNum = DataTableRow->UseIconNum;
+			CardData.IconRef = ModifyTexturePath(DataTableRow->IconRef, CardData.UseIconNum, CardData);
+			CardData.IconChangeLevelInterval = DataTableRow->SkillIconChangeLevelInterval;
+			CardData.CardLevel = &CharacterCardLevel[Index];
+			CardData.IconColor = FLinearColor(DataTableRow->IconColor_R, DataTableRow->IconColor_G, DataTableRow->IconColor_B);
+
 			FunctionsArray.Add(CardData);
 		}
 			break;
@@ -120,6 +162,13 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 			CardData.CardName = *DataTableRow->CardName;
 			CardData.SkillCardDesc = *DataTableRow->SkillCardDesc;
 			CardData.Implement = AllCharaterCardFunctions[Index++];
+
+			CardData.UseIconNum = DataTableRow->UseIconNum;
+			CardData.IconRef = ModifyTexturePath(DataTableRow->IconRef, CardData.UseIconNum, CardData);
+			CardData.IconChangeLevelInterval = DataTableRow->SkillIconChangeLevelInterval;
+			CardData.CardLevel = &CharacterCardLevel[Index];
+			CardData.IconColor = FLinearColor(DataTableRow->IconColor_R, DataTableRow->IconColor_G, DataTableRow->IconColor_B);
+
 			FunctionsArray.Add(CardData);
 		}
 			break;
@@ -130,6 +179,14 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 			CardData.CardName = *DataTableRow->CardName;
 			CardData.SkillCardDesc = *DataTableRow->SkillCardDesc;
 			CardData.Implement = AllCharaterCardFunctions[Index++];
+
+			CardData.UseIconNum = DataTableRow->UseIconNum;
+			CardData.IconRef = ModifyTexturePath(DataTableRow->IconRef, CardData.UseIconNum, CardData);
+			CardData.IconChangeLevelInterval = DataTableRow->SkillIconChangeLevelInterval;
+			CardData.CardLevel = &CharacterCardLevel[Index];
+
+			CardData.IconColor = FLinearColor(DataTableRow->IconColor_R, DataTableRow->IconColor_G, DataTableRow->IconColor_B);
+
 			FunctionsArray.Add(CardData);
 
 		}
@@ -138,4 +195,44 @@ void CLevelUpCardData::InitializeCardData(ECharacterType CharacterType)
 	}
 	TotalCharacterCardNum = Index;
 
+}
+
+FString CLevelUpCardData::ModifyTexturePath(const FString& OriginalPath, int8 UseIconNum, FCardData& CardData)
+{
+	if (UseIconNum < 2)
+		return OriginalPath;
+
+	FString BasePath;
+	FString TextureName;
+
+	int32 LastSlashIndex;
+	if (OriginalPath.FindLastChar('/', LastSlashIndex))
+	{
+		// 경로를 가져옵니다.
+		BasePath = OriginalPath.Left(LastSlashIndex + 1); // 마지막 '/' 포함
+
+		// '/' 이후의 문자열에서 첫 번째 '.'의 위치를 찾습니다.
+		int32 DotIndex;
+		if (OriginalPath.FindLastChar('.', DotIndex))
+		{
+			// '.' 이전까지의 문자열을 가져옵니다.
+			TextureName = OriginalPath.Mid(LastSlashIndex + 1, DotIndex - LastSlashIndex - 1);
+		}
+		else
+			return OriginalPath;
+	}
+	else
+		return OriginalPath;
+
+	int32 LastUnderscoreIndex = INDEX_NONE;
+	TextureName.FindLastChar('_', LastUnderscoreIndex);
+
+	// 언더스코어가 있는 경우, 마지막 언더스코어와 그 뒤의 숫자를 제거합니다.
+	if (LastUnderscoreIndex != INDEX_NONE)
+	{
+		TextureName = TextureName.Left(LastUnderscoreIndex + 1); // 언더스코어까지의 문자열
+		CardData.SubIconRef = TextureName;
+	}
+
+	return BasePath;
 }

@@ -1,7 +1,7 @@
-String,String,String
-iD,CardName,SkillCardDesc
-0,1번스킬 투사체 증가,1번스킬 투사체 증가
-1,1번스킬 데미지 증가,1번스킬 데미지 증가
-2,2번스킬 스킬 쿨타임 감소,2번스킬 스킬 쿨타임 감소
-3,2번스킬 스킬 속성 변경,대충 2번스킬 스킬 속성 변경한다는 내용
-4,3번스킬 강화,대충 강화한다는 내용
+String,String,String,int,int,string,float,float,float
+iD,CardName,SkillCardDesc,UseIconNum,SkillIconChangeLevelInterval,IconRef,IconColor_R,IconColor_G,IconColor_B
+0,1번스킬 투사체 증가,1번스킬 투사체 증가,4,2,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_111_01.Tex_skillicon_111_01',0.84,0.3,0.73
+1,1번스킬 데미지 증가,1번스킬 데미지 증가,4,1,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_216_01.Tex_skillicon_216_01',0.87,0.102,0.255
+2,2번스킬 스킬 쿨타임 감소,2번스킬 스킬 쿨타임 감소,4,3,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_16_01.Tex_skillicon_16_01',0.252,0.202,0.15
+3,2번스킬 스킬 속성 변경,대충 2번스킬 스킬 속성 변경한다는 내용,4,2,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_234_01.Tex_skillicon_234_01',0.174,0.149,0.188
+4,3번스킬 강화,대충 강화한다는 내용,1,0,/Script/Engine.Texture2D'/Game/04_UI/99_Resources/SkillIconPack/Textures/Tex_skillicon_153_01.Tex_skillicon_153_01',0.63,0.106,0.94

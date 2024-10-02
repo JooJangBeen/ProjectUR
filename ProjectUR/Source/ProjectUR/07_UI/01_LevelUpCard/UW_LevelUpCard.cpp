@@ -10,6 +10,7 @@
 #include "Math/Vector2D.h"
 #include "Math/UnrealMathUtility.h" 
 #include "../11_Manager/Managers.h"
+#include "Engine/Texture2D.h"
 
 void UUW_LevelUpCard::NativeConstruct()
 {
@@ -87,6 +88,8 @@ void UUW_LevelUpCard::PrepareWidget()
 	check(CardIcon != nullptr);
 	Button = Cast<UButton>(GetWidgetFromName(FName("BTBTBT")));
 	check(Button != nullptr);
+	Level = Cast<UTextBlock>(GetWidgetFromName(FName("LevelText")));
+	check(Level != nullptr);
 }
 
 void UUW_LevelUpCard::BindFuction()
@@ -139,5 +142,14 @@ void UUW_LevelUpCard::SetCardContents()
 
 	CardName->SetText(FText::FromString(CardData.CardName));
 	CardDescription->SetText(FText::FromString(CardData.SkillCardDesc));
+	Level->SetText(FText::FromString("LV : " + FString::FromInt(*CardData.CardLevel)));
+
+
+
+	UTexture2D* NewIcon= LoadObject<UTexture2D>(nullptr, *PlayerCharacter->GetSkillIconRef(TargetCardNum));
 	
+	check(NewIcon != nullptr);
+	CardIcon.Get()->SetBrushFromTexture(NewIcon);
+	CardIcon.Get()->BrushColor = PlayerCharacter->GetSkillIconColor(TargetCardNum);
+
 }

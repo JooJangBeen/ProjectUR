@@ -81,4 +81,5 @@ private:
 	bool IsAttacking;
 	bool bPressAttack;
 	bool bIsTurn;
+	float TurnTimer;
 };

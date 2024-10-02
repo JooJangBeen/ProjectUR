@@ -41,13 +41,24 @@ void AKallariCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (bIsTurn)
+	{
+		TurnTimer += DeltaSeconds;
+		if (TurnTimer > 0.2f)
+		{
+			bIsTurn = false;
+			TurnTimer = 0;
+		}
+	}
+
 }
 
 void AKallariCharacter::SetupDefault()
 {
 	JumpCurrentCount = 0;
 	JumpMaxCount = 2;
-	
+	TurnTimer = 0;
+
 	OldDirVector = FVector2d(0, 0);
 
 	bIsTurn = false;
@@ -60,15 +71,15 @@ void AKallariCharacter::SetupDefault()
 
 
 
-	FollowCamera->SetRelativeLocation(FVector(-20.f, 40.f, 70.f));
+	FollowCamera->SetRelativeLocation(FVector(70.f, 40.f, 75.f));
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 10.f;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -100.f), FRotator(0, -90.f, 0.f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
@@ -133,35 +144,29 @@ void AKallariCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	//const FRotator Rotation = Controller->GetControlRotation();
-	//const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-	//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-	
-
-	FVector ForwardDirection = FollowCamera->GetForwardVector().GetSafeNormal();;
-	FVector RightDirection = FollowCamera->GetRightVector().GetSafeNormal(); 
+	FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
+	FVector RightDirection = FVector(FollowCamera->GetRightVector().X, FollowCamera->GetRightVector().Y, 0).GetSafeNormal();
 
 	MoveForwardInput = MovementVector.X;
 	MoveRightInput = MovementVector.Y;
 
 	FRotator ControlRot = GetControlRotation();
 
-
 	FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw , GetActorRotation().Yaw) * 0.2f), 0);
 	
-
 	// 카메라 방향으로 캐릭터 회전
 	FQuat QuatRotation = FQuat(YawRotation);
 	SetActorRotation(QuatRotation);
 
-	AddMovementInput(RightDirection, MovementVector.X);
 	AddMovementInput(ForwardDirection, MovementVector.Y);
+	AddMovementInput(RightDirection, MovementVector.X);
 
-
-	bIsTurn = ( FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0 )? true: false;
+	if (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0)
+	{
+		bIsTurn = true;
+		TurnTimer = 0;
+	}
 
 	OldDirVector = MovementVector.GetSafeNormal();
 }
