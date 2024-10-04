@@ -66,6 +66,8 @@ protected:
 	TArray<TObjectPtr<class UInputAction>> InputActionArray;
 
 
+private:
+	TSubclassOf<class AKallariDagger> EclipseDagger;
 
 //=====================================================================================
 // For Animation Control
@@ -102,6 +104,7 @@ private:
 	FVector BlinkTargetPos;
 	float RestrictMoveSpeed;
 	float TargetArmLength;
+	float StartArmLength;
 	float InterpSpeed;   
 	FTimerHandle CameraLagTimerHandle;
 
