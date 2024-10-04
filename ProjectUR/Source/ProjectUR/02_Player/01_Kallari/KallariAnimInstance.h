@@ -34,7 +34,7 @@ enum class EKallariAnimNotify : uint8
 	CheckNextCombo,	PlayNextCombo,	StopComboAtk,
 	AimDagger,	DeAimDagger,
 	BlinkCameraLagSet, BlinkMoveFwd,  BlinkTeleport, BlinkEnd,
-
+	AnhilSetup, AnhilNextSlot, AnhilTeleport, AnhilCamLagEnd, AnhilEnd,
 	END
 };
 
@@ -125,7 +125,18 @@ private:
 	void AnimNotify_BlinkTeleport() { AnimNotifyArray[int(EKallariAnimNotify::BlinkTeleport)].Broadcast(); }
 	UFUNCTION()
 	void AnimNotify_BlinkEnd() { AnimNotifyArray[int(EKallariAnimNotify::BlinkEnd)].Broadcast(); }
-	
+
+	UFUNCTION()
+	void AnimNotify_AnhilSetup() { AnimNotifyArray[int(EKallariAnimNotify::AnhilSetup)].Broadcast(); }
+	UFUNCTION()
+	void AnimNotify_AnhilNextSlot() { AnimNotifyArray[int(EKallariAnimNotify::AnhilNextSlot)].Broadcast(); }
+	UFUNCTION()
+	void AnimNotify_AnhilTeleport() { AnimNotifyArray[int(EKallariAnimNotify::AnhilTeleport)].Broadcast(); }
+	UFUNCTION()
+	void AnimNotify_AnhilCamLagEnd() { AnimNotifyArray[int(EKallariAnimNotify::AnhilCamLagEnd)].Broadcast(); }
+	UFUNCTION()
+	void AnimNotify_AnhilEnd() { AnimNotifyArray[int(EKallariAnimNotify::AnhilEnd)].Broadcast(); }
+
 #pragma endregion
 
 private:

@@ -222,7 +222,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 
 
 		});
-
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkMoveFwd)->AddLambda([this]()->void
 		{
 			bRestrictMove = true;
@@ -232,7 +231,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 
 			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
 		});
-
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkTeleport)->AddLambda([this]()->void
 		{
 			bRestrictMove = false;
@@ -240,7 +238,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			SetActorLocation(BlinkTargetPos);
 
 		});
-
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkEnd)->AddLambda([this]()->void
 		{
 			bRestrictMove = false;
@@ -248,6 +245,48 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
 		});
 	
+	//AnhilSetup, AnhilNextSlot, AnhilTeleport, AnhilCamLagEnd, AnhilEnd,
+	//For Annihilation
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilSetup)->AddLambda([this]()->void
+		{
+			RestrictMoveDir = FollowCamera->GetForwardVector();
+			RestrictMoveDir.Z = 0;
+			RestrictMoveDir = RestrictMoveDir.GetSafeNormal();
+			BlinkTargetPos = GetActorLocation() + (RestrictMoveDir * 1500.0f);
+			RestrictMoveSpeed = (BlinkTargetPos - GetActorLocation()).Size() * 0.3f / 0.5f;
+			BlickCameraTimer = 0;
+
+			FRotator ControlRot = GetControlRotation();
+			FRotator YawRotation(0, ControlRot.Yaw, 0);
+			FQuat QuatRotation = FQuat(YawRotation);
+			SetActorRotation(QuatRotation);
+
+
+
+
+			TargetArmLength = 500.f;
+			InterpSpeed = 0.40f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+
+
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilNextSlot)->AddLambda([this]()->void
+		{
+			bRestrictMove = true;
+			//타겟 위치가 공중이면
+			if (true)
+				pAnimInstance->PlayAnimMontage(EKallariMTG::Annihilation, FName("Ulti_1"), 1.f);
+			else
+				pAnimInstance->PlayAnimMontage(EKallariMTG::Annihilation, FName("Ulti_2"), 1.f);
+
+
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilCamLagEnd)->AddLambda([this]()->void
+		{
+			bRestrictMove = false;
+			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+
+		});
 }
 
 void AKallariCharacter::Setup_MoveRestrictAnimNotify()
@@ -457,7 +496,11 @@ void AKallariCharacter::Skill_SSB(const FInputActionValue& Value)
 
 void AKallariCharacter::Skill_AHA(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Annihilation");
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Annihilation");
+
+
+	pAnimInstance->PlayAnimMontage(EKallariMTG::Annihilation, 0.3f);
+
 }
 
 void AKallariCharacter::UpdateCameraZoom()
