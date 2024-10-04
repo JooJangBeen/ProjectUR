@@ -2,10 +2,13 @@
 
 
 #include "TeraCharacter.h"
-#include "InputMappingContext.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "InputMappingContext.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Math.h"
 
 
 // Sets default values
@@ -30,17 +33,37 @@ void ATeraCharacter::BeginPlay()
 }
 
 // Called every frame
-void ATeraCharacter::Tick(float DeltaTime)
+void ATeraCharacter::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(DeltaSeconds);
+
+	if (bIsTurn)
+	{
+		TurnTimer += DeltaSeconds;
+		if (TurnTimer > 0.2f)
+		{
+			bIsTurn = false;
+			TurnTimer = 0;
+		}
+	}
 
 }
 
 void ATeraCharacter::SetupDefault()
 {
+	JumpCurrentCount = 0;
+	JumpMaxCount = 1;
+	TurnTimer = 0;
+
+	OldDirVector = FVector2d(0, 0);
+
+	bIsTurn = false;
+	IsAttacking = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
+
+	FollowCamera->SetRelativeLocation(FVector(70.f, 40.f, 75.f));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
@@ -60,7 +83,7 @@ void ATeraCharacter::LoadMeshAnimation()
 	if (CharacterMeshRef.Object)
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/02_Player/99_Resources/ParagonTerra/Characters/Heroes/Terra/Terra_AnimBlueprint.Terra_AnimBlueprint_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/01_Blueprint/03_TerraAnimation/ABP_TerraBluePrint.ABP_TerraBluePrint_C"));
 	if (AnimInstClassRef.Class)
 		GetMesh()->SetAnimInstanceClass(AnimInstClassRef.Class);
 }
@@ -68,20 +91,20 @@ void ATeraCharacter::LoadMeshAnimation()
 void ATeraCharacter::LoadEnhancedInput()
 {
 	//Load Mapping Context
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/01_Terra/IM_TerraDefault.IM_TerraDefault'"));
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/04_Terra/IM_TerraDefault.IM_TerraDefault'"));
 	if (InputMappingContextRef.Object)
 		DefaultMappingContext = InputMappingContextRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UInputAction>InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Terra/InputAction/IA_TerraJump.IA_TerraJump'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction>InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/04_Terra/InputAction/IA_TerraJump.IA_TerraJump'"));
 	if (nullptr != InputActionJumpRef.Object)
 		JumpAction = InputActionJumpRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Terra/InputAction/IA_TerraMove.IA_TerraMove'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/04_Terra/InputAction/IA_TerraMove.IA_TerraMove'"));
 	if (nullptr != InputActionMoveRef.Object)
 		MoveAction = InputActionMoveRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Terra/InputAction/IA_TerraLook.IA_TerraLook'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/04_Terra/InputAction/IA_TerraLook.IA_TerraLook'"));
 	if (nullptr != InputActionLookRef.Object)
 		LookAction = InputActionLookRef.Object;
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionNormalAttackRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Terra/InputAction/IA_TerraAttack.IA_TerraAttack'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionNormalAttackRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/04_Terra/InputAction/IA_TerraAttack.IA_TerraAttack'"));
 	if (nullptr != InputActionNormalAttackRef.Object)
 		NormalAttackAction = InputActionNormalAttackRef.Object;
 }
@@ -110,14 +133,31 @@ void ATeraCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
+	FVector RightDirection = FVector(FollowCamera->GetRightVector().X, FollowCamera->GetRightVector().Y, 0).GetSafeNormal();
 
-	AddMovementInput(ForwardDirection, MovementVector.X);
-	AddMovementInput(RightDirection, MovementVector.Y);
+	MoveForwardInput = MovementVector.X;
+	MoveRightInput = MovementVector.Y;
+
+	FRotator ControlRot = GetControlRotation();
+
+	FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw, GetActorRotation().Yaw) * 0.2f), 0);
+
+	// 카메라 방향으로 캐릭터 회전
+	FQuat QuatRotation = FQuat(YawRotation);
+	SetActorRotation(QuatRotation);
+
+	AddMovementInput(ForwardDirection, MovementVector.Y);
+	AddMovementInput(RightDirection, MovementVector.X);
+
+	if (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0)
+	{
+		bIsTurn = true;
+		TurnTimer = 0;
+	}
+
+	OldDirVector = MovementVector.GetSafeNormal();
 }
 
 void ATeraCharacter::Look(const FInputActionValue& Value)
@@ -137,5 +177,45 @@ void ATeraCharacter::Jump()
 void ATeraCharacter::NormalAttack()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Attack");
+}
+
+float ATeraCharacter::NormalizeYaw(float Yaw)
+{
+	while (Yaw >= 360.f) Yaw -= 360.0f;
+	while (Yaw < 0) Yaw += 360.0f;
+	return Yaw;
+}
+
+float ATeraCharacter::CalculateYaw(float DestYaw, float SourYaw)
+{
+	float NLDest = NormalizeYaw(DestYaw);
+	float NLSour = NormalizeYaw(SourYaw);
+
+	float Result = NLDest - NLSour;
+	float a, b;
+	a = NLDest - 360.f - NLSour;
+	b = NLDest + 360.f - NLSour;
+
+	if (fabsf(Result) > 180.f)
+	{
+		if (fabsf(Result) < fabsf(a))
+		{
+			if (fabsf(Result) < fabsf(b))
+				return Result;
+			else
+				return b;
+		}
+		else
+		{
+
+			if (fabsf(a) < fabsf(b))
+				return a;
+			else
+				return b;
+		}
+	}
+
+
+	return Result;
 }
 

@@ -15,7 +15,8 @@ class PROJECTUR_API ACTWorldSettings : public AWorldSettings
 {
 	GENERATED_BODY()
 
-
+public:
+	ACTWorldSettings();
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Selection")
 	ECharacterType SelectedCharacter;

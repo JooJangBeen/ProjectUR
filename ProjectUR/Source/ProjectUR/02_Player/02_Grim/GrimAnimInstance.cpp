@@ -6,10 +6,14 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Math.h"
 
-UGrimAnimInstance::UGrimAnimInstance()
+UGrimAnimInstance::UGrimAnimInstance(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-UGrimAnimInstance::~UGrimAnimInstance()
+void UGrimAnimInstance::NativeInitializeAnimation()
+{
+}
+
+void UGrimAnimInstance::NativeUpdateAnimation(float deltaTime)
 {
 }

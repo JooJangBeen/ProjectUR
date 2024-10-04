@@ -78,7 +78,10 @@ void UKallariAnimInstance::PlayAnimMontage(EKallariMTG eMtg, FName sectionName, 
 	if (!IsAnyMontagePlaying() || Montage_IsPlaying(AnimMontage[int(eMtg)]))
 		Montage_Play(AnimMontage[int(eMtg)], PlayRate);
 	if (Montage_GetCurrentSection(AnimMontage[int(eMtg)]) != sectionName)
+	{
+		Montage_Play(AnimMontage[int(eMtg)], PlayRate);
 		Montage_JumpToSection(sectionName, AnimMontage[int(eMtg)]);
+	}
 }
 
 void UKallariAnimInstance::StopAnimMontage(EKallariMTG eMtg, float InOutBlendTime)
