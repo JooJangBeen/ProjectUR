@@ -48,8 +48,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> NormalAttackAction;
 
-private:	
+public:
+	float GetMoveForwardInput() { return MoveForwardInput; };
+	float GetMoveRightInput() { return MoveRightInput; };
+	int32 GetJumpCount() { return JumpCurrentCount; };
+	bool GetIsTurn() { return bIsTurn; };
+	float NormalizeYaw(float Yaw);
+	float CalculateYaw(float DestYaw, float SourYaw);
 
+private:	
+	FVector2D OldDirVector;
+
+	float MoveForwardInput;
+	float MoveRightInput;
+
+	bool IsAttacking;
+	bool bPressAttack;
+	bool bIsTurn;
+	float TurnTimer;
 	
 	
 };

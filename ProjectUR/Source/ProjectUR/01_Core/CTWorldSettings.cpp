@@ -3,3 +3,6 @@
 
 #include "CTWorldSettings.h"
 
+ACTWorldSettings::ACTWorldSettings() : Super ::AWorldSettings()
+{
+}
