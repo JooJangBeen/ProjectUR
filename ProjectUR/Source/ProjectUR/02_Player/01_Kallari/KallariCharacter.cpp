@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Math.h"
 #include "KallariAnimInstance.h"
+#include "../04_Actor/02_KallariDagger/KallariDagger.h"
 
 
 AKallariCharacter::AKallariCharacter()
@@ -92,9 +93,11 @@ void AKallariCharacter::SetupDefault()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName((TEXT("CharacterMesh")));
 
+	static ConstructorHelpers::FClassFinder<AKallariDagger> ProjectileBPClass(TEXT("/Game/02_Player/01_Kallari/KallariDagger.KallariDagger_C"));
+	check(ProjectileBPClass.Class);
 
-
-
+	EclipseDagger = ProjectileBPClass.Class;
+	
 }
 
 
@@ -187,7 +190,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 		});
 
 
-
 	//For EclipseDagger
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::DeAimDagger)->AddLambda([this]()->void 
 		{
@@ -195,7 +197,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 		if (pAnimInstance->Montage_GetCurrentSection(pAnimInstance->GetAnimMontage(EKallariMTG::EclipseDagger)) != FName("Throw_3"))
 			pAnimInstance->StopAnimMontage(EKallariMTG::EclipseDagger);
 		});
-
 
 
 	//For Blink
@@ -216,6 +217,7 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 
 
 
+			StartArmLength = PLAYERDEFAULTCAMLENTH;
 			TargetArmLength = 500.f;
 			InterpSpeed = 0.53f;
 			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
@@ -229,12 +231,18 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			CameraBoom->CameraLagSpeed = 5.0f;            // 카메라가 따라오는 속도 (값이 낮을수록 더 느리게)
 			CameraBoom->CameraLagMaxDistance = 100000.0f;    // 최대 지연 거리
 
-			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+			FVector CameraLocation = FollowCamera->GetComponentLocation();
+			FVector TargetLocation = CameraBoom->GetComponentLocation();
+			float ActualDistance = FVector::Dist(CameraLocation, TargetLocation);
+			StartArmLength = ActualDistance;
+			TargetArmLength = PLAYERDEFAULTCAMLENTH;
+			InterpSpeed = 0.8f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+
 		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkTeleport)->AddLambda([this]()->void
 		{
 			bRestrictMove = false;
-			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
 			SetActorLocation(BlinkTargetPos);
 
 		});
@@ -245,7 +253,7 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
 		});
 	
-	//AnhilSetup, AnhilNextSlot, AnhilTeleport, AnhilCamLagEnd, AnhilEnd,
+
 	//For Annihilation
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilSetup)->AddLambda([this]()->void
 		{
@@ -263,7 +271,7 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 
 
 
-
+			StartArmLength = PLAYERDEFAULTCAMLENTH;
 			TargetArmLength = 500.f;
 			InterpSpeed = 0.40f;
 			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
@@ -272,7 +280,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilNextSlot)->AddLambda([this]()->void
 		{
-			bRestrictMove = true;
 			//타겟 위치가 공중이면
 			if (true)
 				pAnimInstance->PlayAnimMontage(EKallariMTG::Annihilation, FName("Ulti_1"), 1.f);
@@ -281,10 +288,36 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 
 
 		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilTeleport)->AddLambda([this]()->void
+		{
+			CameraBoom->bEnableCameraLag = true;          // 카메라 위치 지연 활성화
+			CameraBoom->CameraLagSpeed = 5.0f;            // 카메라가 따라오는 속도 (값이 낮을수록 더 느리게)
+			CameraBoom->CameraLagMaxDistance = 100000.0f;    // 최대 지연 거리
+
+
+
+			bRestrictMove = true;
+			SetActorLocation(BlinkTargetPos);
+
+
+		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilCamLagEnd)->AddLambda([this]()->void
 		{
 			bRestrictMove = false;
-			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+
+			FVector CameraLocation = FollowCamera->GetComponentLocation();
+			FVector TargetLocation = CameraBoom->GetComponentLocation();
+			float ActualDistance = FVector::Dist(CameraLocation, TargetLocation);
+			StartArmLength = ActualDistance;
+			TargetArmLength = PLAYERDEFAULTCAMLENTH;
+			InterpSpeed = 0.8f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+			
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::AnhilEnd)->AddLambda([this]()->void
+		{
+
+			CameraBoom->bEnableCameraLag = false;
 
 		});
 }
@@ -459,6 +492,18 @@ void AKallariCharacter::GroundComboAtk(const FInputActionValue& Value)
 void AKallariCharacter::Skill_ED(const FInputActionValue& Value)
 {
 	FVector2D MouseInput = Value.Get<FVector2D>();
+	/*
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;  // 플레이어 앞에서 소환
+	FRotator SpawnRotation = GetActorRotation();
+	TObjectPtr<AKallariDagger> ECDagger = GetWorld()->SpawnActor<AKallariDagger>(EclipseDagger, SpawnLocation, SpawnRotation);
+	
+	if (ECDagger)
+	{
+		// 투사체 발사
+		FVector FireDirection = GetActorForwardVector();
+		ECDagger->FireInDirection(FireDirection);
+	}
+	*/
 
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Eclipse Dagger Input : %f, %f"), MouseInput.X, MouseInput.Y));
 
@@ -507,15 +552,29 @@ void AKallariCharacter::UpdateCameraZoom()
 {
 	BlickCameraTimer += GetWorld()->GetDeltaSeconds();
 
-	float CurrentArmLength = FMath::Lerp(PLAYERDEFAULTCAMLENTH, TargetArmLength, BlickCameraTimer / InterpSpeed);
+	float CurrentArmLength = FMath::Lerp(StartArmLength, TargetArmLength, BlickCameraTimer / InterpSpeed);
 	CameraBoom->TargetArmLength = CurrentArmLength;
 
-	if (CurrentArmLength >= TargetArmLength)
+
+	if (StartArmLength > TargetArmLength)
 	{
-		CameraBoom->TargetArmLength = TargetArmLength;
-		// 타이머를 멈추고 완료
-		GetWorld()->GetTimerManager().ClearTimer(CameraLagTimerHandle);
+		if (CurrentArmLength < TargetArmLength)
+		{
+			CameraBoom->TargetArmLength = TargetArmLength;
+			// 타이머를 멈추고 완료
+			GetWorld()->GetTimerManager().ClearTimer(CameraLagTimerHandle);
+		}
 	}
+	else
+	{
+		if (CurrentArmLength > TargetArmLength)
+		{
+			CameraBoom->TargetArmLength = TargetArmLength;
+			// 타이머를 멈추고 완료
+			GetWorld()->GetTimerManager().ClearTimer(CameraLagTimerHandle);
+		}
+	}
+
 
 }
 
