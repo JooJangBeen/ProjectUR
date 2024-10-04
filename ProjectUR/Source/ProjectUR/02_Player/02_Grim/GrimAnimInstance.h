@@ -13,7 +13,11 @@ UCLASS()
 class PROJECTUR_API UGrimAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
 public:
-	UGrimAnimInstance();
-	~UGrimAnimInstance();
+	UGrimAnimInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+public:
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float deltaTime) override;
 };
