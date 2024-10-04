@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Math.h"
+#include "KallariAnimInstance.h"
 
 
 AKallariCharacter::AKallariCharacter()
@@ -31,10 +32,12 @@ void AKallariCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+
+	Setup_MoveRestrictAnimNotify();
+	Setup_SkillAnimNotify();
 }
 
 void AKallariCharacter::Tick(float DeltaSeconds)
@@ -50,6 +53,8 @@ void AKallariCharacter::Tick(float DeltaSeconds)
 			TurnTimer = 0;
 		}
 	}
+	if (bRestrictMove)
+		SetActorLocation(GetActorLocation() + (RestrictMoveDir * RestrictMoveSpeed * GetWorld()->GetDeltaSeconds()));
 
 }
 
@@ -58,13 +63,14 @@ void AKallariCharacter::SetupDefault()
 	JumpCurrentCount = 0;
 	JumpMaxCount = 2;
 	TurnTimer = 0;
+	GroundComboAtkCount = 0;
+	iGroundComboChecker = 0;
 
 	OldDirVector = FVector2d(0, 0);
 
-	bIsTurn = false;
-	IsAttacking = false;
-	bPressAttack = false;
 
+	bIsTurn = false;
+	bRestrictMove = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -75,16 +81,22 @@ void AKallariCharacter::SetupDefault()
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
-	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 10.f;
+	GetCharacterMovement()->JumpZVelocity = KallariDefault_JumpZVelocity;
+	GetCharacterMovement()->AirControl = KallariDefault_AirControl;
+	GetCharacterMovement()->MaxWalkSpeed = KallariDefault_MaxWalkSpped;
+	GetCharacterMovement()->MinAnalogWalkSpeed = KallariDefault_MinAnalogWalkSpeed;
+	GetCharacterMovement()->BrakingDecelerationWalking = KallariDefault_BrakingDecelerationWalking;
+
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -100.f), FRotator(0, -90.f, 0.f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName((TEXT("CharacterMesh")));
+
+
+
+
 }
+
 
 void AKallariCharacter::LoadMeshAnimation()
 {
@@ -106,24 +118,29 @@ void AKallariCharacter::LoadEnhancedInput()
 		DefaultMappingContext = InputMappingContextRef.Object;
 
 	//Load Input Action
+	InputActionArray.SetNum(int(EKallariInputAction::END));
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariJump.IA_KallariJump'"));
 	if (nullptr != InputActionJumpRef.Object)
-		JumpAction = InputActionJumpRef.Object;
+		InputActionArray[int(EKallariInputAction::JumpAction)] = InputActionJumpRef.Object;
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariMove.IA_KallariMove'"));
 	if (nullptr != InputActionMoveRef.Object)
-		MoveAction = InputActionMoveRef.Object;
+		InputActionArray[int(EKallariInputAction::MoveAction)] = InputActionMoveRef.Object;
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariLook.IA_KallariLook'"));
 	if (nullptr != InputActionLookRef.Object)
-		LookAction = InputActionLookRef.Object;
+		InputActionArray[int(EKallariInputAction::LookAction)] = InputActionLookRef.Object;
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillEDRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillED.IA_KallariSkillED'"));
 	if (nullptr != InputActionSkillEDRef.Object)
-		SkillEDAction = InputActionSkillEDRef.Object;
+		InputActionArray[int(EKallariInputAction::SkillEDAction)] = InputActionSkillEDRef.Object;
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillSSBRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillSSB.IA_KallariSkillSSB'"));
 	if (nullptr != InputActionSkillSSBRef.Object)
-		SkillSSBAction = InputActionSkillSSBRef.Object;
+		InputActionArray[int(EKallariInputAction::SkillSSBAction)] = InputActionSkillSSBRef.Object;
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSkillAHARef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariSkillAHA.IA_KallariSkillAHA'"));
 	if (nullptr != InputActionSkillAHARef.Object)
-		SkillAHAAction = InputActionSkillAHARef.Object;
+		InputActionArray[int(EKallariInputAction::SkillAHAAction)] = InputActionSkillAHARef.Object;
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionComboAtkRef(TEXT("/Script/EnhancedInput.InputAction'/Game/05_Input/01_Kallari/InputAction/IA_KallariBasicAtk.IA_KallariBasicAtk'"));
+	if (nullptr != InputActionComboAtkRef.Object)
+		InputActionArray[int(EKallariInputAction::GroundComboAtk)] = InputActionComboAtkRef.Object;
 
 }
 
@@ -131,19 +148,192 @@ void AKallariCharacter::BindInputAction2Fuction(UInputComponent* PlayerInputComp
 {
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AKallariCharacter::Move);
-	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AKallariCharacter::Look);
-	EnhancedInputComponent->BindAction(SkillEDAction, ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_ED);
-	EnhancedInputComponent->BindAction(SkillSSBAction, ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_SSB);
-	EnhancedInputComponent->BindAction(SkillAHAAction, ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_AHA);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::JumpAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Jump);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::JumpAction)], ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::MoveAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Move);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::LookAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Look);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::SkillEDAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_ED);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::SkillSSBAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_SSB);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::SkillAHAAction)], ETriggerEvent::Triggered, this, &AKallariCharacter::Skill_AHA);
+	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::GroundComboAtk)], ETriggerEvent::Triggered, this, &AKallariCharacter::GroundComboAtk);
+}
+
+void AKallariCharacter::Setup_SkillAnimNotify()
+{
+	if (!pAnimInstance)
+	{
+		pAnimInstance = Cast<UKallariAnimInstance>(GetMesh()->GetAnimInstance());
+		check(pAnimInstance);
+	}
+
+	//For ComboAtk
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::CheckNextCombo)->AddLambda([this]()->void
+		{
+			iGroundComboChecker = 0b00000011;
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::PlayNextCombo)->AddLambda([this]()->void
+		{
+			if (iGroundComboChecker == 1)
+			{
+				FName ComboSection = FName(FString::Printf(TEXT("ATK_%d"), GroundComboAtkCount));
+				if (pAnimInstance->Montage_GetCurrentSection(pAnimInstance->GetAnimMontage(EKallariMTG::GroundComboAtk)) != ComboSection)
+					pAnimInstance->PlayAnimMontage(EKallariMTG::GroundComboAtk, ComboSection);
+			}
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::StopComboAtk)->AddLambda([this]()->void
+		{
+			GroundComboAtkCount = 0;
+			iGroundComboChecker = 0;
+		});
+
+
+
+	//For EclipseDagger
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::DeAimDagger)->AddLambda([this]()->void 
+		{
+
+		if (pAnimInstance->Montage_GetCurrentSection(pAnimInstance->GetAnimMontage(EKallariMTG::EclipseDagger)) != FName("Throw_3"))
+			pAnimInstance->StopAnimMontage(EKallariMTG::EclipseDagger);
+		});
+
+
+
+	//For Blink
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkCameraLagSet)->AddLambda([this]()->void
+		{
+			RestrictMoveDir = FollowCamera->GetForwardVector();
+			RestrictMoveDir.Z = 0;
+			RestrictMoveDir = RestrictMoveDir.GetSafeNormal();
+			BlinkTargetPos = GetActorLocation() + (RestrictMoveDir * 1500.0f);
+			RestrictMoveSpeed = (BlinkTargetPos - GetActorLocation()).Size() * 0.3f / 0.24f;
+			BlickCameraTimer = 0;
+
+			FRotator ControlRot = GetControlRotation();
+			FRotator YawRotation(0, ControlRot.Yaw, 0);
+			FQuat QuatRotation = FQuat(YawRotation);
+			SetActorRotation(QuatRotation);
+
+
+
+
+			TargetArmLength = 500.f;
+			InterpSpeed = 0.53f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+
+
+		});
+
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkMoveFwd)->AddLambda([this]()->void
+		{
+			bRestrictMove = true;
+			CameraBoom->bEnableCameraLag = true;          // 카메라 위치 지연 활성화
+			CameraBoom->CameraLagSpeed = 5.0f;            // 카메라가 따라오는 속도 (값이 낮을수록 더 느리게)
+			CameraBoom->CameraLagMaxDistance = 100000.0f;    // 최대 지연 거리
+
+			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+		});
+
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkTeleport)->AddLambda([this]()->void
+		{
+			bRestrictMove = false;
+			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+			SetActorLocation(BlinkTargetPos);
+
+		});
+
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkEnd)->AddLambda([this]()->void
+		{
+			bRestrictMove = false;
+			CameraBoom->bEnableCameraLag = false;
+			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
+		});
+	
+}
+
+void AKallariCharacter::Setup_MoveRestrictAnimNotify()
+{
+	if (!pAnimInstance)
+	{
+		pAnimInstance = Cast<UKallariAnimInstance>(GetMesh()->GetAnimInstance());
+		check(pAnimInstance);
+	}
+
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockMoveFB)->AddLambda([this]()->void
+		{	bMoveFBLock = true;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockMoveLR)->AddLambda([this]()->void
+		{	bMoveLRLock = true;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockMoveB)->AddLambda([this]()->void
+		{	bMoveBLock = true;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockJump)->AddLambda([this]()->void
+		{	bJumpingLock = true;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockCameraYaw)->AddLambda([this]()->void
+		{	bCamYawLock = true;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockCameraPitch)->AddLambda([this]()->void
+		{	bCamPitchLock = true;	});	
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockMoveFB)->AddLambda([this]()->void
+		{	bMoveFBLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockMoveLR)->AddLambda([this]()->void
+		{	bMoveLRLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockMoveB)->AddLambda([this]()->void
+		{	bMoveBLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockJump)->AddLambda([this]()->void
+		{	bJumpingLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockCameraYaw)->AddLambda([this]()->void
+		{	bCamYawLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockCameraPitch)->AddLambda([this]()->void
+		{	bCamPitchLock = false;	});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::UnBlockAll)->AddLambda([this]()->void
+		{	
+			bCamYawLock = false;
+			bCamPitchLock = false;
+			bMoveFBLock = false;
+			bMoveLRLock = false;
+			bJumpingLock = false;
+			bMoveBLock = false;
+
+			GetCharacterMovement()->JumpZVelocity = KallariDefault_JumpZVelocity;
+			GetCharacterMovement()->AirControl = KallariDefault_AirControl;
+			GetCharacterMovement()->MaxWalkSpeed = KallariDefault_MaxWalkSpped;
+			GetCharacterMovement()->MinAnalogWalkSpeed = KallariDefault_MinAnalogWalkSpeed;
+			GetCharacterMovement()->BrakingDecelerationWalking = KallariDefault_BrakingDecelerationWalking;
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlocakAll)->AddLambda([this]()->void
+		{
+			bCamYawLock = true;
+			bCamPitchLock = true;
+			bMoveFBLock = true;
+			bMoveLRLock = true;
+			bJumpingLock = true;
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockAllMove)->AddLambda([this]()->void
+		{
+			bMoveFBLock = true;
+			bMoveLRLock = true;
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockAllCameraCtrl)->AddLambda([this]()->void
+		{
+			bCamYawLock = true;
+			bCamPitchLock = true;
+		});
+
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlockAllMoveJump)->AddLambda([this]()->void
+		{
+			bMoveFBLock = true;
+			bMoveLRLock = true;
+			bJumpingLock = true;
+		});
+	
+
 }
 
 void AKallariCharacter::Move(const FInputActionValue& Value)
 {
+	if (bRestrictMove) return;
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
+	if (bMoveBLock && MovementVector.Y < 0)
+		MovementVector.Y = 0;
 
 	FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
 	FVector RightDirection = FVector(FollowCamera->GetRightVector().X, FollowCamera->GetRightVector().Y, 0).GetSafeNormal();
@@ -159,8 +349,11 @@ void AKallariCharacter::Move(const FInputActionValue& Value)
 	FQuat QuatRotation = FQuat(YawRotation);
 	SetActorRotation(QuatRotation);
 
-	AddMovementInput(ForwardDirection, MovementVector.Y);
-	AddMovementInput(RightDirection, MovementVector.X);
+
+	if (!bMoveFBLock)
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+	if (!bMoveLRLock)
+		AddMovementInput(RightDirection, MovementVector.X);
 
 	if (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0)
 	{
@@ -175,22 +368,112 @@ void AKallariCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(-LookAxisVector.Y);
+	if (!bCamYawLock)
+		AddControllerYawInput(LookAxisVector.X);
+	if (!bCamPitchLock)
+		AddControllerPitchInput(-LookAxisVector.Y);
+}
+void AKallariCharacter::Jump()
+{
+	if (bJumpingLock) return;
+	Super::Jump();
+
+}
+
+void AKallariCharacter::GroundComboAtk(const FInputActionValue& Value)
+{
+	FVector2D MouseInput = Value.Get<FVector2D>();
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Eclipse Dagger Input : %f, %f"), MouseInput.X, MouseInput.Y));
+	
+	if (!pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::GroundComboAtk)))
+	{
+		GroundComboAtkCount = 0;
+		iGroundComboChecker = 0;
+	}
+
+
+
+	if (MouseInput.Y || (iGroundComboChecker == 0b00000001)) return;
+	
+
+	if (!iGroundComboChecker)
+	{
+		iGroundComboChecker = 0b00000001;
+		pAnimInstance->PlayAnimMontage(EKallariMTG::GroundComboAtk);
+		return;
+	}
+
+
+	if (iGroundComboChecker & (1 << 1))
+	{
+		GroundComboAtkCount++;
+		iGroundComboChecker = 0b00000001;
+
+		if (GroundComboAtkCount > 2)
+			GroundComboAtkCount = 0;
+	}
+
+	//FName ComboSection = FName(FString::Printf(TEXT("ATK_%d"), GroundComboAtkCount));
+	//pAnimInstance->PlayAnimMontage(EKallariMTG::GroundComboAtk, ComboSection);
+
 }
 void AKallariCharacter::Skill_ED(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Eclipse Dagger");
+	FVector2D MouseInput = Value.Get<FVector2D>();
+
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Eclipse Dagger Input : %f, %f"), MouseInput.X, MouseInput.Y));
+
+	if(!MouseInput.X && MouseInput.Y)
+		pAnimInstance->PlayAnimMontage(EKallariMTG::EclipseDagger);
+	else if(MouseInput.X && MouseInput.Y)
+		pAnimInstance->PlayAnimMontage(EKallariMTG::EclipseDagger,FName("Throw_3"));
+	else if (!MouseInput.Y)
+		pAnimInstance->BroadCastAnimNotify(EKallariAnimNotify::DeAimDagger);
+
+
 }
 
 void AKallariCharacter::Skill_SSB(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Shadow step/Blink");
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Shadow step/Blink");
+
+
+	/*
+	float KeyInput = Value.Get<float>();
+	if (KeyInput > 0)
+	{
+		pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep);
+	}
+	else
+	{
+		if (pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::ShadowStep))
+			&& (pAnimInstance->Montage_GetCurrentSection() != FName("Sprint_2")))
+			pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep,FName("Sprint_2"));
+	}
+	*/
+	pAnimInstance->PlayAnimMontage(EKallariMTG::Blink);
+
 }
 
 void AKallariCharacter::Skill_AHA(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Annihilation");
+}
+
+void AKallariCharacter::UpdateCameraZoom()
+{
+	BlickCameraTimer += GetWorld()->GetDeltaSeconds();
+
+	float CurrentArmLength = FMath::Lerp(PLAYERDEFAULTCAMLENTH, TargetArmLength, BlickCameraTimer / InterpSpeed);
+	CameraBoom->TargetArmLength = CurrentArmLength;
+
+	if (CurrentArmLength >= TargetArmLength)
+	{
+		CameraBoom->TargetArmLength = TargetArmLength;
+		// 타이머를 멈추고 완료
+		GetWorld()->GetTimerManager().ClearTimer(CameraLagTimerHandle);
+	}
+
 }
 
 float AKallariCharacter::NormalizeYaw(float Yaw)

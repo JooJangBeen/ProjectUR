@@ -10,6 +10,12 @@ UKallariAnimInstance::UKallariAnimInstance()
 {
 	IsAccelation = false;
 	IsInAir = false;
+
+	
+	//for (int i = 0; i< int(EKallariAnimNotify::END); i++)
+	//	AnimNotifyArray.Add(FOnAnimNofityEx());
+	AnimNotifyArray.SetNum(int(EKallariAnimNotify::END));
+	
 }
 
 float NormalizeYaw(float Yaw)
@@ -23,7 +29,7 @@ void UKallariAnimInstance::NativeUpdateAnimation(float deltaTime)
 {
 	Super::NativeUpdateAnimation(deltaTime);
 
-	TObjectPtr<AKallariCharacter> Owner = Cast<AKallariCharacter>(TryGetPawnOwner());
+	TObjectPtr<class AKallariCharacter> Owner = Cast<AKallariCharacter>(TryGetPawnOwner());
 
 
 	if (::IsValid(Owner))
@@ -45,3 +51,40 @@ void UKallariAnimInstance::NativeUpdateAnimation(float deltaTime)
 	}
 
 }
+
+FOnAnimNofityEx* const UKallariAnimInstance::GetAnimNotifyDeligate(EKallariAnimNotify eNotify)
+{
+	check(int(eNotify) < int(EKallariAnimNotify::END));
+	return &AnimNotifyArray[int(eNotify)];
+}
+
+UAnimMontage* const UKallariAnimInstance::GetAnimMontage(EKallariMTG eMtg)
+{
+	check(int(eMtg) < int(EKallariMTG::END));
+	return AnimMontage[int(eMtg)];
+}
+
+
+void UKallariAnimInstance::PlayAnimMontage(EKallariMTG eMtg, float PlayRate)
+{
+	if (!IsAnyMontagePlaying() || Montage_IsPlaying(AnimMontage[int(eMtg)]))
+	{
+		Montage_Play(AnimMontage[int(eMtg)], PlayRate);
+	}
+}
+
+void UKallariAnimInstance::PlayAnimMontage(EKallariMTG eMtg, FName sectionName, float PlayRate)
+{
+	if (!IsAnyMontagePlaying() || Montage_IsPlaying(AnimMontage[int(eMtg)]))
+		Montage_Play(AnimMontage[int(eMtg)], PlayRate);
+	if (Montage_GetCurrentSection(AnimMontage[int(eMtg)]) != sectionName)
+		Montage_JumpToSection(sectionName, AnimMontage[int(eMtg)]);
+}
+
+void UKallariAnimInstance::StopAnimMontage(EKallariMTG eMtg, float InOutBlendTime)
+{
+	Montage_Stop(InOutBlendTime, AnimMontage[int(eMtg)]);
+}
+
+
+
