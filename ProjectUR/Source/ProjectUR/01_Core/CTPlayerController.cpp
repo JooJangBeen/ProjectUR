@@ -8,8 +8,9 @@
 #include "../11_Manager/Managers.h"
 
 
-ACTPlayerController::ACTPlayerController()
+ACTPlayerController::ACTPlayerController() : Super::APlayerController()
 {
+	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/IM_WorldDefualt.IM_WorldDefualt'"));
 	if (InputMappingContextRef.Object)
 		DefaultMappingContext = InputMappingContextRef.Object;

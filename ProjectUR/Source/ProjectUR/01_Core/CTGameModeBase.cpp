@@ -8,7 +8,7 @@
 #include "CTWorldSettings.h"
 #include "EnhancedInputSubsystems.h"
 
-ACTGameModeBase::ACTGameModeBase()
+ACTGameModeBase::ACTGameModeBase() : Super::AGameModeBase()
 {
 
 
