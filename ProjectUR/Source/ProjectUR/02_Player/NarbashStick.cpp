@@ -20,7 +20,7 @@ ANarbashStick::ANarbashStick()
 	BodyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	CableComp = CreateDefaultSubobject<UCableComponent>(TEXT("CABLECOMP"));
-	CableComp->SetupAttachment(BodyMesh);
+	CableComp->SetupAttachment(RootComp);
 	CableComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PROJECTILEMOVEMENT"));
@@ -41,6 +41,8 @@ void ANarbashStick::BeginPlay()
 void ANarbashStick::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	BodyMesh->AddRelativeRotation(FRotator(0.f, 0.f, 20.f));
 
 }
 

@@ -23,6 +23,7 @@ protected:
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void InitProperties();
+	virtual void InitCameraSetting();
 	virtual void SetupNotifys();
 	virtual void Move(const FInputActionValue& Value);
 	virtual void Look(const FInputActionValue& Value);

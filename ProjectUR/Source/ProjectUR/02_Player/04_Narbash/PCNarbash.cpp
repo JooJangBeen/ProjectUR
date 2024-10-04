@@ -28,7 +28,9 @@ APCNarbash::APCNarbash()
 	}
 
 	InitMappingContextSetting();
+	InitCameraSetting();
 	InitProperties();
+	InitializeCardData(ECharacterType::Narbash);
 
 }
 
@@ -81,6 +83,12 @@ void APCNarbash::InitProperties()
 	bMoveLRLock = false;
 	bCamYawLock = false;
 	bJumpingLock = false;
+
+}
+
+void APCNarbash::InitCameraSetting()
+{
+	
 
 }
 
