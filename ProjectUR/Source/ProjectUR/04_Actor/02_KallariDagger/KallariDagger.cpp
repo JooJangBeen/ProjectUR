@@ -22,9 +22,7 @@ AKallariDagger::AKallariDagger()
 
 	// 콜리전 이벤트를 활성화
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	//CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic")); // 오버랩을 감지하도록 설정
 	CollisionComponent->SetCollisionObjectType(ECC_WorldDynamic);
-	//CollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	CollisionComponent->SetGenerateOverlapEvents(true);
 
 	// Overlap 이벤트 바인딩
@@ -49,6 +47,7 @@ AKallariDagger::AKallariDagger()
 	ProjectileDaggerParticle->SetVisibility(true);  // 파티클은 보임
 
 	bIsOnGround = false;
+	HittedGroundPos = FVector(0,0,0);
 }
 
 // Called when the game starts or when spawned
@@ -75,16 +74,17 @@ void AKallariDagger::EclipseDagger_OverlapBegin(UPrimitiveComponent* OverlappedC
 
 	if (OtherActor && OtherComp)
 	{
-
-
 		if (OtherComp->GetCollisionObjectType() == ECC_WorldStatic)
 		{
 
 			bIsOnGround = true;
 
 			SetLifeSpan(12.f);
+			CollisionComponent->SetSphereRadius(45.f);
 			MovementComp->StopMovementImmediately();
 			MovementComp->ProjectileGravityScale = 0.f;
+
+			HittedGroundPos = SweepResult.ImpactPoint;
 
 			DaggerMesh->SetVisibility(true);
 			ProjectileDaggerParticle->SetVisibility(false);

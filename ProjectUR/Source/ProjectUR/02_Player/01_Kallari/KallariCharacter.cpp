@@ -13,7 +13,6 @@
 #include "Math.h"
 #include "../04_Actor/02_KallariDagger/KallariDagger.h"
 #include "../11_Manager/Managers.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "../07_UI/02_IngameUI/UW_Crosshair.h"
 
 
@@ -66,6 +65,8 @@ void AKallariCharacter::SetupDefault()
 
 	OldDirVector = FVector2d(0, 0);
 
+	bDashMove = false;
+	bNeedToCheckDagger = true;
 	bTargettedDagger = false;
 	bIsTurn = false;
 	bRestrictMove = false;
@@ -160,54 +161,64 @@ void AKallariCharacter::BindInputAction2Fuction(UInputComponent* PlayerInputComp
 
 void AKallariCharacter::CheckDagger(float DeltaSeconds)
 {
-
-	FVector CamPos;
-	FRotator SpawnRot;
-
-	GetController()->GetPlayerViewPoint(CamPos, SpawnRot);
-
-	FVector LineTrace_Start = CamPos;
-	FVector LineTrace_End = LineTrace_Start + SpawnRot.Vector() * 1500.f;
-	FHitResult HitResult;
-	TArray<AActor*> Ignore;
-	Ignore.Add(this);
-	bool bResult = false;
-
-	bResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), LineTrace_Start, LineTrace_End, UEngineTypes::ConvertToTraceType(ECC_Camera), true, Ignore, EDrawDebugTrace::None, HitResult, true);
-
-
-	//if (bResult && HitResult.GetActor()->IsA(AKallariDagger::StaticClass()))
-	if (bResult)
+	if (bNeedToCheckDagger)
 	{
 
-		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Red, FString::Printf(TEXT("hihi : %s"), *HitResult.GetActor()->GetName()));
+		FVector CamPos;
+		FRotator SpawnRot;
 
-		if (HitResult.GetActor()->IsA(AKallariDagger::StaticClass()))
+		GetController()->GetPlayerViewPoint(CamPos, SpawnRot);
+
+		FVector LineTrace_Start = CamPos;
+		FVector LineTrace_End = LineTrace_Start + SpawnRot.Vector() * 2500.f;
+		FHitResult HitResult;
+		TArray<AActor*> Ignore;
+		Ignore.Add(this);
+		bool bResult = false;
+
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this); // 무시할 액터 추가
+		CollisionParams.bTraceComplex = true; // 복잡한 트레이스 여부
+		CollisionParams.bReturnPhysicalMaterial = false; // 물리 재질 반환 여부
+
+		FCollisionShape SphereShape = FCollisionShape::MakeSphere(20.f);
+		bResult = GetWorld()->SweepSingleByChannel(HitResult, LineTrace_Start, LineTrace_End, FQuat::Identity, ECC_Camera, SphereShape, CollisionParams);
+
+
+		if (bResult && HitResult.GetActor()->IsA(AKallariDagger::StaticClass()))
 		{
+			AKallariDagger* Dagger = Cast<AKallariDagger>(HitResult.GetActor());
+			check(Dagger != nullptr);
 
-			if (!bTargettedDagger)
+			if (Dagger->GetIsOnGround())
 			{
-				UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
-				check(pCrosshair != nullptr);
-				pCrosshair->SetMainColor(FLinearColor(0, 0.2f, 1.f));
-				bTargettedDagger = true;
+				if (!bTargettedDagger)
+				{
+					UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
+					check(pCrosshair != nullptr);
+					pCrosshair->SetMainColor(FLinearColor(0, 0.2f, 1.f));
+					bTargettedDagger = true;
 
-				TargettedDagger = Cast<AKallariDagger>(HitResult.GetActor());
-				check(pCrosshair != nullptr);
-
+				}
+				TargettedDagger = Dagger;
 			}
 		}
-	}
-	else if(bTargettedDagger)
-	{
-		bTargettedDagger = false;
-		UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
-		check(pCrosshair != nullptr);
+		else if (bTargettedDagger)
+		{
+			bTargettedDagger = false;
+			UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
+			check(pCrosshair != nullptr);
 
-		pCrosshair->ResetMainColor();
-		TargettedDagger = nullptr;
+			pCrosshair->ResetMainColor();
+			TargettedDagger = nullptr;
+		}
+
+		if (TargettedDagger && !TargettedDagger->IsValidLowLevel())
+		{
+			TargettedDagger = nullptr;
+			bTargettedDagger = false;
+		}
 	}
-	
 
 }
 
@@ -226,6 +237,17 @@ void AKallariCharacter::RestrictMove(float DeltaSeconds)
 	*/
 	if (bRestrictMove)
 		SetActorLocation(GetActorLocation() + (RestrictMoveDir * RestrictMoveSpeed * DeltaSeconds));
+	else if (bDashMove)
+	{
+		FRotator ControlRot = GetControlRotation();
+		FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw, GetActorRotation().Yaw) * 0.2f), 0);
+		FQuat QuatRotation = FQuat(YawRotation);
+		SetActorRotation(QuatRotation);
+
+		FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
+		AddMovementInput(ForwardDirection, 1);
+	}
+
 }
 
 void AKallariCharacter::Setup_SkillAnimNotify()
@@ -264,7 +286,6 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 		if (pAnimInstance->Montage_GetCurrentSection(pAnimInstance->GetAnimMontage(EKallariMTG::EclipseDagger)) != FName("Throw_3"))
 			pAnimInstance->StopAnimMontage(EKallariMTG::EclipseDagger);
 		});
-
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::ThrowDagger)->AddLambda([this]()->void
 		{
 			//sword_handle_r
@@ -285,57 +306,81 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			}
 
 		});
-	
+
+
+	//For ShadowStep
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::ShadowStepStart)->AddLambda([this]()->void
+		{
+			bDashMove = true;
+		});
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::ShadowStepEnd)->AddLambda([this]()->void
+		{
+			bDashMove = false;
+		});
 
 	//For Blink
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkCameraLagSet)->AddLambda([this]()->void
 		{
-			RestrictMoveDir = FollowCamera->GetForwardVector();
-			RestrictMoveDir.Z = 0;
-			RestrictMoveDir = RestrictMoveDir.GetSafeNormal();
-			BlinkTargetPos = GetActorLocation() + (RestrictMoveDir * 1500.0f);
-			RestrictMoveSpeed = (BlinkTargetPos - GetActorLocation()).Size() * 0.3f / 0.24f;
-			BlickCameraTimer = 0;
+
 
 			FRotator ControlRot = GetControlRotation();
 			FRotator YawRotation(0, ControlRot.Yaw, 0);
 			FQuat QuatRotation = FQuat(YawRotation);
 			SetActorRotation(QuatRotation);
 
-
-
-
+			BlickCameraTimer = 0;
 			StartArmLength = PLAYERDEFAULTCAMLENTH;
 			TargetArmLength = 500.f;
-			InterpSpeed = 0.53f;
-			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+			InterpSpeed = 0.48f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, GetWorld()->GetDeltaSeconds(), true);
 
 
 		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkMoveFwd)->AddLambda([this]()->void
 		{
 			bRestrictMove = true;
+
+			BlinkTargetPos = TargettedDagger->GetHittedGroundPos() + (TargettedDagger->GetActorLocation() - TargettedDagger->GetHittedGroundPos()).GetSafeNormal() * 100.f;
+			RestrictMoveDir = (BlinkTargetPos - GetActorLocation()).GetSafeNormal();
+			RestrictMoveSpeed = (BlinkTargetPos - GetActorLocation()).Size() * 0.7f / 0.24f;
+			BlickCameraTimer = 0;
+
 			CameraBoom->bEnableCameraLag = true;          // 카메라 위치 지연 활성화
-			CameraBoom->CameraLagSpeed = 5.0f;            // 카메라가 따라오는 속도 (값이 낮을수록 더 느리게)
-			CameraBoom->CameraLagMaxDistance = 100000.0f;    // 최대 지연 거리
+			CameraBoom->CameraLagSpeed = 7.0f;            // 카메라가 따라오는 속도 (값이 낮을수록 더 느리게)
+			CameraBoom->CameraLagMaxDistance = 3000.0f;    // 최대 지연 거리
 
 			FVector CameraLocation = FollowCamera->GetComponentLocation();
 			FVector TargetLocation = CameraBoom->GetComponentLocation();
 			float ActualDistance = FVector::Dist(CameraLocation, TargetLocation);
 			StartArmLength = ActualDistance;
 			TargetArmLength = PLAYERDEFAULTCAMLENTH;
-			InterpSpeed = 0.8f;
-			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, 0.01f, true);
+			InterpSpeed = 0.6f;
+			GetWorld()->GetTimerManager().SetTimer(CameraLagTimerHandle, this, &AKallariCharacter::UpdateCameraZoom, GetWorld()->GetDeltaSeconds(), true);
 
 		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkTeleport)->AddLambda([this]()->void
 		{
 			bRestrictMove = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			SetActorLocation(BlinkTargetPos);
 
 		});
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkEnd)->AddLambda([this]()->void
 		{
+			bNeedToCheckDagger = true;
 			bRestrictMove = false;
 			CameraBoom->bEnableCameraLag = false;
 			CameraBoom->TargetArmLength = PLAYERDEFAULTCAMLENTH;
@@ -613,20 +658,36 @@ void AKallariCharacter::Skill_SSB(const FInputActionValue& Value)
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Skill Shadow step/Blink");
 
 
-	/*
 	float KeyInput = Value.Get<float>();
+
 	if (KeyInput > 0)
 	{
-		pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep);
+		if (bTargettedDagger && TargettedDagger && TargettedDagger->IsValidLowLevel())
+		{
+			if (!pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::Blink)) &&
+				!pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::ShadowStep)))
+			{
+				pAnimInstance->PlayAnimMontage(EKallariMTG::Blink, 1.5f);
+				TargettedDagger->SetLifeSpan(10.0);
+				bNeedToCheckDagger = false;
+			}
+		}
+		else
+		{
+
+			if (!GetCharacterMovement()->IsFalling())
+			{
+				pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep);
+			}
+		}
 	}
 	else
 	{
 		if (pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::ShadowStep))
 			&& (pAnimInstance->Montage_GetCurrentSection() != FName("Sprint_2")))
-			pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep,FName("Sprint_2"));
+			pAnimInstance->PlayAnimMontage(EKallariMTG::ShadowStep, FName("Sprint_2"));
 	}
-	*/
-	pAnimInstance->PlayAnimMontage(EKallariMTG::Blink);
+
 
 }
 

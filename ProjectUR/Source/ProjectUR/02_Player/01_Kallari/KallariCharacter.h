@@ -106,6 +106,7 @@ private:
 	int8 GroundComboAtkCount;
 	int8 iGroundComboChecker;
 
+	bool bDashMove;
 	float BlickCameraTimer;
 	bool bRestrictMove;
 	FVector RestrictMoveDir;
@@ -118,6 +119,7 @@ private:
 
 	TObjectPtr<class AKallariDagger> TargettedDagger;
 	bool bTargettedDagger;
+	bool bNeedToCheckDagger;
 
 private:
 	/* Restricted Action Key */

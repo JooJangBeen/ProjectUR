@@ -32,7 +32,7 @@ enum class EKallariAnimNotify : uint8
 	UnBlockMoveFB, UnBlockMoveB,UnBlockMoveLR, UnBlockJump, UnBlockCameraYaw, UnBlockCameraPitch, UnBlockAll,
 
 	CheckNextCombo,	PlayNextCombo,	StopComboAtk,
-	AimDagger,	DeAimDagger, ThrowDagger,
+	ShadowStepStart, ShadowStepEnd ,AimDagger, DeAimDagger, ThrowDagger,
 	BlinkCameraLagSet, BlinkMoveFwd,  BlinkTeleport, BlinkEnd,
 	AnhilSetup, AnhilNextSlot, AnhilTeleport, AnhilCamLagEnd, AnhilEnd,
 	END
@@ -118,6 +118,11 @@ private:
 	void AnimNotify_PlayNextCombo() { AnimNotifyArray[int(EKallariAnimNotify::PlayNextCombo)].Broadcast(); }
 	UFUNCTION()
 	void AnimNotify_StopComboAtk() { AnimNotifyArray[int(EKallariAnimNotify::StopComboAtk)].Broadcast(); }
+
+	UFUNCTION()
+	void AnimNotify_ShadowStepStart() { AnimNotifyArray[int(EKallariAnimNotify::ShadowStepStart)].Broadcast(); }
+	UFUNCTION()
+	void AnimNotify_ShadowStepEnd() { AnimNotifyArray[int(EKallariAnimNotify::ShadowStepEnd)].Broadcast(); }
 
 	UFUNCTION()
 	void AnimNotify_BlinkCameraLagSet() { AnimNotifyArray[int(EKallariAnimNotify::BlinkCameraLagSet)].Broadcast(); }

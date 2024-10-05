@@ -29,7 +29,8 @@ public:
 
 public:
 	void FireInDirection(const FVector& ShootDirection);
-	bool GetIsOnGround();
+	bool GetIsOnGround() { return bIsOnGround; };
+	FVector GetHittedGroundPos() { return HittedGroundPos; };
 
 
 private:
@@ -47,4 +48,5 @@ private:
 
 private:
 	bool bIsOnGround = false;
+	FVector HittedGroundPos;
 };
