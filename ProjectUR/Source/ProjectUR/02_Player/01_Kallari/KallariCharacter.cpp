@@ -3,15 +3,18 @@
 
 #include "KallariCharacter.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "InputMappingContext.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Math.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "KallariAnimInstance.h"
+#include "Math.h"
 #include "../04_Actor/02_KallariDagger/KallariDagger.h"
+#include "../11_Manager/Managers.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "../07_UI/02_IngameUI/UW_Crosshair.h"
 
 
 AKallariCharacter::AKallariCharacter()
@@ -20,6 +23,8 @@ AKallariCharacter::AKallariCharacter()
 	LoadMeshAnimation();
 	LoadEnhancedInput();
 	InitializeCardData(ECharacterType::Kallari);
+
+
 }
 
 void AKallariCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -45,17 +50,9 @@ void AKallariCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsTurn)
-	{
-		TurnTimer += DeltaSeconds;
-		if (TurnTimer > 0.2f)
-		{
-			bIsTurn = false;
-			TurnTimer = 0;
-		}
-	}
-	if (bRestrictMove)
-		SetActorLocation(GetActorLocation() + (RestrictMoveDir * RestrictMoveSpeed * GetWorld()->GetDeltaSeconds()));
+	CheckDagger(DeltaSeconds);
+	RestrictMove(DeltaSeconds);
+
 
 }
 
@@ -69,7 +66,7 @@ void AKallariCharacter::SetupDefault()
 
 	OldDirVector = FVector2d(0, 0);
 
-
+	bTargettedDagger = false;
 	bIsTurn = false;
 	bRestrictMove = false;
 	bUseControllerRotationYaw = false;
@@ -161,6 +158,76 @@ void AKallariCharacter::BindInputAction2Fuction(UInputComponent* PlayerInputComp
 	EnhancedInputComponent->BindAction(InputActionArray[int(EKallariInputAction::GroundComboAtk)], ETriggerEvent::Triggered, this, &AKallariCharacter::GroundComboAtk);
 }
 
+void AKallariCharacter::CheckDagger(float DeltaSeconds)
+{
+
+	FVector CamPos;
+	FRotator SpawnRot;
+
+	GetController()->GetPlayerViewPoint(CamPos, SpawnRot);
+
+	FVector LineTrace_Start = CamPos;
+	FVector LineTrace_End = LineTrace_Start + SpawnRot.Vector() * 1500.f;
+	FHitResult HitResult;
+	TArray<AActor*> Ignore;
+	Ignore.Add(this);
+	bool bResult = false;
+
+	bResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), LineTrace_Start, LineTrace_End, UEngineTypes::ConvertToTraceType(ECC_Camera), true, Ignore, EDrawDebugTrace::None, HitResult, true);
+
+
+	//if (bResult && HitResult.GetActor()->IsA(AKallariDagger::StaticClass()))
+	if (bResult)
+	{
+
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Red, FString::Printf(TEXT("hihi : %s"), *HitResult.GetActor()->GetName()));
+
+		if (HitResult.GetActor()->IsA(AKallariDagger::StaticClass()))
+		{
+
+			if (!bTargettedDagger)
+			{
+				UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
+				check(pCrosshair != nullptr);
+				pCrosshair->SetMainColor(FLinearColor(0, 0.2f, 1.f));
+				bTargettedDagger = true;
+
+				TargettedDagger = Cast<AKallariDagger>(HitResult.GetActor());
+				check(pCrosshair != nullptr);
+
+			}
+		}
+	}
+	else if(bTargettedDagger)
+	{
+		bTargettedDagger = false;
+		UUW_Crosshair* pCrosshair = Cast<UUW_Crosshair>(GetMgr(UUIManager)->GetUserWidget(FName("Crosshair")));
+		check(pCrosshair != nullptr);
+
+		pCrosshair->ResetMainColor();
+		TargettedDagger = nullptr;
+	}
+	
+
+}
+
+void AKallariCharacter::RestrictMove(float DeltaSeconds)
+{
+	/*
+	if (bIsTurn)
+	{
+		TurnTimer += DeltaSeconds;
+		if (TurnTimer > 0.2f)
+		{
+			bIsTurn = false;
+			TurnTimer = 0;
+		}
+	}
+	*/
+	if (bRestrictMove)
+		SetActorLocation(GetActorLocation() + (RestrictMoveDir * RestrictMoveSpeed * DeltaSeconds));
+}
+
 void AKallariCharacter::Setup_SkillAnimNotify()
 {
 	if (!pAnimInstance)
@@ -198,6 +265,27 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			pAnimInstance->StopAnimMontage(EKallariMTG::EclipseDagger);
 		});
 
+	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::ThrowDagger)->AddLambda([this]()->void
+		{
+			//sword_handle_r
+			FVector SpawnLocation, CamPos;
+			FRotator SpawnRotation;
+
+			SpawnLocation = GetMesh()->GetSocketLocation(FName("sword_handle_r"));
+			GetController()->GetPlayerViewPoint(CamPos, SpawnRotation);
+
+			SpawnRotation = (((CamPos + SpawnRotation.Vector() * 1500.f) - SpawnLocation).GetSafeNormal()).Rotation();
+
+			TObjectPtr<AKallariDagger> ECDagger = GetWorld()->SpawnActor<AKallariDagger>(EclipseDagger, SpawnLocation, SpawnRotation);
+
+			if (ECDagger)
+			{
+				// 투사체 발사
+				ECDagger->FireInDirection(SpawnRotation.Vector());
+			}
+
+		});
+	
 
 	//For Blink
 	pAnimInstance->GetAnimNotifyDeligate(EKallariAnimNotify::BlinkCameraLagSet)->AddLambda([this]()->void
@@ -492,27 +580,30 @@ void AKallariCharacter::GroundComboAtk(const FInputActionValue& Value)
 void AKallariCharacter::Skill_ED(const FInputActionValue& Value)
 {
 	FVector2D MouseInput = Value.Get<FVector2D>();
-	/*
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;  // 플레이어 앞에서 소환
-	FRotator SpawnRotation = GetActorRotation();
-	TObjectPtr<AKallariDagger> ECDagger = GetWorld()->SpawnActor<AKallariDagger>(EclipseDagger, SpawnLocation, SpawnRotation);
-	
-	if (ECDagger)
-	{
-		// 투사체 발사
-		FVector FireDirection = GetActorForwardVector();
-		ECDagger->FireInDirection(FireDirection);
-	}
-	*/
+
 
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Eclipse Dagger Input : %f, %f"), MouseInput.X, MouseInput.Y));
 
-	if(!MouseInput.X && MouseInput.Y)
+	if (!MouseInput.X && MouseInput.Y)
+	{
+		pAnimInstance->BroadCastAnimNotify(EKallariAnimNotify::AimDagger);
 		pAnimInstance->PlayAnimMontage(EKallariMTG::EclipseDagger);
-	else if(MouseInput.X && MouseInput.Y)
-		pAnimInstance->PlayAnimMontage(EKallariMTG::EclipseDagger,FName("Throw_3"));
+	}
+	else if (MouseInput.X && MouseInput.Y)
+	{
+		if (pAnimInstance->Montage_IsPlaying(pAnimInstance->GetAnimMontage(EKallariMTG::EclipseDagger)) &&
+			pAnimInstance->Montage_GetCurrentSection(pAnimInstance->GetAnimMontage(EKallariMTG::EclipseDagger)) == FName("Throw_2"))
+		{
+			FQuat QuatRotation = FQuat(FRotator(0, GetControlRotation().Yaw, 0));
+			SetActorRotation(QuatRotation);
+			pAnimInstance->PlayAnimMontage(EKallariMTG::EclipseDagger, FName("Throw_3"));
+		}
+	}
 	else if (!MouseInput.Y)
+	{
+
 		pAnimInstance->BroadCastAnimNotify(EKallariAnimNotify::DeAimDagger);
+	}
 
 
 }

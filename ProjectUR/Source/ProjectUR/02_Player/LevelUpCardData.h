@@ -38,7 +38,9 @@ public:
 	int8 GetTotalCardNum() { return FunctionsArray.Num(); };
 	int8 GetTotalPublicCardNum() {	return TotalPublicCardNum; };
 	int8 GetTotalCharacterCardNum() { return TotalCharacterCardNum; };
-	const int8& GetCardLevel(int8 index) {return *FunctionsArray[index].CardLevel;};
+	const int8& GetCardLevel(int8 index) { return *FunctionsArray[index].CardLevel; };
+	const int8& GetCardLevel_PublicCard(int8 index) { return *FunctionsArray[index].CardLevel; };
+	const int8& GetCardLevel_CharacterCard(int8 index) {return *FunctionsArray[TotalPublicCardNum+index].CardLevel;};
 	FString GetSkillIconRef(int8 index);
 	FLinearColor GetSkillIconColor(int8 index) { return FunctionsArray[index].IconColor; };
 	void ImplementCard(int8 index);

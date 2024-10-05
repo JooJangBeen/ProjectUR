@@ -29,21 +29,21 @@ protected:
 	// UI 생성 및 제거
 	////////////////////////////////////////////////////////////////////////////////
 public:
-	void AddToViewPort_UserWidgetGroup(FName UIGroupName);
-	void AddToViewPort_UserWidget(FName WidgetName);
-	void RemoveFromVieport_UserWidgetGroup(FName UIGroupName);
-	void RemoveFromVieport_UserWidget(FName WidgetName);
-	void TurnAddRemove_UserWidgetGroup(FName UIGroupName);
-	void TurnAddRemove_UserWidget(FName WidgetName);
+	void AddToViewPort_UserWidgetGroup(FName&& UIGroupName);
+	void AddToViewPort_UserWidget(FName&& WidgetName);
+	void RemoveFromVieport_UserWidgetGroup(FName&& UIGroupName);
+	void RemoveFromVieport_UserWidget(FName&& WidgetName);
+	void TurnAddRemove_UserWidgetGroup(FName&& UIGroupName);
+	void TurnAddRemove_UserWidget(FName&& WidgetName);
 
 
 	////////////////////////////////////////////////////////////////////////////////
 	// For UserWidget
 	////////////////////////////////////////////////////////////////////////////////
 public:
-	TObjectPtr<UCTUserWidget> const GetUserWidget(FName UserWidgetName);
-	void SetVisibility_UserWidget(FName UserWidgetName, ESlateVisibility EVisibility);
-	void OnOffVisibility_UserWidget(FName UserWidgetName);
+	TObjectPtr<UCTUserWidget> const GetUserWidget(FName&& UserWidgetName);
+	void SetVisibility_UserWidget(FName&& UserWidgetName, ESlateVisibility EVisibility);
+	void OnOffVisibility_UserWidget(FName&& UserWidgetName);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// For Widget

@@ -14,10 +14,15 @@ void UUIManager::Initialize(FSubsystemCollectionBase& collection)
 	UIGroupReference.Add("LevelUpCardUIGroup", LevelUpCardUI);
 
 
+
+	TMap<FName, FString> InGameUI;
+	InGameUI.Add("Crosshair", TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/04_UI/02_InGameUI/WBP_Crosshair.WBP_Crosshair_C'"));
+	UIGroupReference.Add("InGameUIGroup", InGameUI);
+
 	PrepareUserWidget();
 }
 
-void UUIManager::AddToViewPort_UserWidgetGroup(FName UIGroupName)
+void UUIManager::AddToViewPort_UserWidgetGroup(FName&& UIGroupName)
 {
 	TMap<FName, FString>* UIGroupRef = UIGroupReference.Find(UIGroupName);
 	check(UIGroupRef != nullptr);
@@ -32,7 +37,7 @@ void UUIManager::AddToViewPort_UserWidgetGroup(FName UIGroupName)
 
 }
 
-void UUIManager::AddToViewPort_UserWidget(FName WidgetName)
+void UUIManager::AddToViewPort_UserWidget(FName&& WidgetName)
 {
 	TObjectPtr<UCTUserWidget>* widget = Widgets.Find(WidgetName);
 	check(widget && *widget);
@@ -40,7 +45,7 @@ void UUIManager::AddToViewPort_UserWidget(FName WidgetName)
 	widget->Get()->AddToViewport();
 }
 
-void UUIManager::RemoveFromVieport_UserWidgetGroup(FName UIGroupName)
+void UUIManager::RemoveFromVieport_UserWidgetGroup(FName&& UIGroupName)
 {
 	TMap<FName, FString>* UIGroupRef = UIGroupReference.Find(UIGroupName);
 	check(UIGroupRef != nullptr);
@@ -54,7 +59,7 @@ void UUIManager::RemoveFromVieport_UserWidgetGroup(FName UIGroupName)
 	}
 }
 
-void UUIManager::RemoveFromVieport_UserWidget(FName WidgetName)
+void UUIManager::RemoveFromVieport_UserWidget(FName&& WidgetName)
 {
 	TObjectPtr<UCTUserWidget>* widget = Widgets.Find(WidgetName);
 	check(widget && *widget);
@@ -62,7 +67,7 @@ void UUIManager::RemoveFromVieport_UserWidget(FName WidgetName)
 	widget->Get()->RemoveFromViewport();
 }
 
-void UUIManager::TurnAddRemove_UserWidgetGroup(FName UIGroupName)
+void UUIManager::TurnAddRemove_UserWidgetGroup(FName&& UIGroupName)
 {
 	TMap<FName, FString>* UIGroupRef = UIGroupReference.Find(UIGroupName);
 	check(UIGroupRef != nullptr);
@@ -80,7 +85,7 @@ void UUIManager::TurnAddRemove_UserWidgetGroup(FName UIGroupName)
 
 }
 
-void UUIManager::TurnAddRemove_UserWidget(FName WidgetName)
+void UUIManager::TurnAddRemove_UserWidget(FName&& WidgetName)
 {
 	TObjectPtr<UCTUserWidget>* widget = Widgets.Find(WidgetName);
 	check(widget && *widget);
@@ -123,7 +128,7 @@ void UUIManager::PrepareUserWidget()
 
 }
 
-TObjectPtr<UCTUserWidget> const UUIManager::GetUserWidget(FName UserWidgetName)
+TObjectPtr<UCTUserWidget> const UUIManager::GetUserWidget(FName&& UserWidgetName)
 {
 	TObjectPtr<UCTUserWidget>* FoundWidgetPtr = Widgets.Find(UserWidgetName);
 	check(FoundWidgetPtr && *FoundWidgetPtr);
@@ -131,7 +136,7 @@ TObjectPtr<UCTUserWidget> const UUIManager::GetUserWidget(FName UserWidgetName)
 	return *FoundWidgetPtr;
 }
 
-void UUIManager::SetVisibility_UserWidget(FName UserWidgetName, ESlateVisibility EVisibility)
+void UUIManager::SetVisibility_UserWidget(FName&& UserWidgetName, ESlateVisibility EVisibility)
 {
 	TObjectPtr<UCTUserWidget>* FoundWidgetPtr = Widgets.Find(UserWidgetName);
 	if (!(FoundWidgetPtr && *FoundWidgetPtr))
@@ -144,7 +149,7 @@ void UUIManager::SetVisibility_UserWidget(FName UserWidgetName, ESlateVisibility
 	FoundWidgetPtr->Get()->SetVisibility(EVisibility);
 }
 
-void UUIManager::OnOffVisibility_UserWidget(FName UserWidgetName)
+void UUIManager::OnOffVisibility_UserWidget(FName&& UserWidgetName)
 {
 	TObjectPtr<UCTUserWidget>* FoundWidgetPtr = Widgets.Find(UserWidgetName);
 	if (!(FoundWidgetPtr && *FoundWidgetPtr))

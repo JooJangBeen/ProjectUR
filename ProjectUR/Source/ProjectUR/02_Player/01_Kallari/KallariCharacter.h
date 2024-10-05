@@ -47,6 +47,14 @@ protected:
 	void LoadEnhancedInput();
 	void BindInputAction2Fuction(UInputComponent* PlayerInputComponent);
 
+
+
+//=====================================================================================
+// Functions to be executed in the tick function
+//=====================================================================================
+	void CheckDagger(float DeltaSeconds);
+	void RestrictMove(float DeltaSeconds);
+
 //=====================================================================================
 // Input
 //=====================================================================================
@@ -107,6 +115,9 @@ private:
 	float StartArmLength;
 	float InterpSpeed;   
 	FTimerHandle CameraLagTimerHandle;
+
+	TObjectPtr<class AKallariDagger> TargettedDagger;
+	bool bTargettedDagger;
 
 private:
 	/* Restricted Action Key */

@@ -32,6 +32,7 @@ void ACTPlayerController::BeginPlay()
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 		Subsystem->AddMappingContext(DefaultMappingContext, 2e9);
 
+	GetMgr(UUIManager)->TurnAddRemove_UserWidgetGroup("InGameUIGroup");
 
 }
 
