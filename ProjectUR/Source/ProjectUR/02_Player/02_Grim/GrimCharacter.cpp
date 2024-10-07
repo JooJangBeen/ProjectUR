@@ -15,6 +15,7 @@ AGrimCharacter::AGrimCharacter()
 	SetupDefault();
 	LoadMeshAnimation();
 	LoadEnhancedInput();
+	InitializeCardData(ECharacterType::Grim);
 }
 
 void AGrimCharacter::BeginPlay()
@@ -144,6 +145,11 @@ void AGrimCharacter::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(-LookAxisVector.Y);
 }
 
+void AGrimCharacter::Jump()
+{
+	Super::Jump();
+}
+
 void AGrimCharacter::LeftButton(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated LeftButton Dagger");
@@ -152,4 +158,43 @@ void AGrimCharacter::LeftButton(const FInputActionValue& Value)
 void AGrimCharacter::RightButton(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Right Dagger");
+}
+
+float AGrimCharacter::NormalizeYaw(float Yaw)
+{
+	while (Yaw >= 360.f) Yaw -= 360.0f;
+	while (Yaw < 0) Yaw += 360.0f;
+	return Yaw;
+}
+
+float AGrimCharacter::CalculateYaw(float DestYaw, float SourYaw)
+{
+	float NLDest = NormalizeYaw(DestYaw);
+	float NLSour = NormalizeYaw(SourYaw);
+
+	float Result = NLDest - NLSour;
+	float a, b;
+	a = NLDest - 360.f - NLSour;
+	b = NLDest + 360.f - NLSour;
+
+	if (fabsf(Result) > 180.f)
+	{
+		if (fabsf(Result) < fabsf(a))
+		{
+			if (fabsf(Result) < fabsf(b))
+				return Result;
+			else
+				return b;
+		}
+		else
+		{
+
+			if (fabsf(a) < fabsf(b))
+				return a;
+			else
+				return b;
+		}
+	}
+
+	return Result;
 }
