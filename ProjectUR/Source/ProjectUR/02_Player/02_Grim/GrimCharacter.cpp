@@ -113,24 +113,52 @@ void AGrimCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AGrimCharacter::Move(const FInputActionValue& Value)
 {
+	////S. 천천히 회전
+	//FVector2D MovementVector = Value.Get<FVector2D>();
+
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+	//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	//MoveForwardInput = MovementVector.Y;
+	//MoveRightInput = MovementVector.X;
+
+
+	//AddMovementInput(ForwardDirection, MovementVector.X);
+	//AddMovementInput(RightDirection, MovementVector.Y);
+
+
+
+	//bIsTurn = (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0) ? true : false;
+
+	//OldDirVector = MovementVector.GetSafeNormal();
+	////E. 
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
+	FVector RightDirection = FVector(FollowCamera->GetRightVector().X, FollowCamera->GetRightVector().Y, 0).GetSafeNormal();
 
 	MoveForwardInput = MovementVector.Y;
 	MoveRightInput = MovementVector.X;
 
+	FRotator ControlRot = GetControlRotation();
+
+	FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw, GetActorRotation().Yaw) * 0.2f), 0);
+
+	// 카메라 방향으로 캐릭터 회전
+	FQuat QuatRotation = FQuat(YawRotation);
+	SetActorRotation(QuatRotation);
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
 
-
-
-	bIsTurn = (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0) ? true : false;
+	if (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0)
+	{
+		bIsTurn = true;
+	}
 
 	OldDirVector = MovementVector.GetSafeNormal();
 }
