@@ -15,6 +15,7 @@ AGrimCharacter::AGrimCharacter()
 	SetupDefault();
 	LoadMeshAnimation();
 	LoadEnhancedInput();
+	InitializeCardData(ECharacterType::Grim);
 }
 
 void AGrimCharacter::BeginPlay()
@@ -112,24 +113,52 @@ void AGrimCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AGrimCharacter::Move(const FInputActionValue& Value)
 {
+	////S. 천천히 회전
+	//FVector2D MovementVector = Value.Get<FVector2D>();
+
+	//const FRotator Rotation = Controller->GetControlRotation();
+	//const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+	//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	//MoveForwardInput = MovementVector.Y;
+	//MoveRightInput = MovementVector.X;
+
+
+	//AddMovementInput(ForwardDirection, MovementVector.X);
+	//AddMovementInput(RightDirection, MovementVector.Y);
+
+
+
+	//bIsTurn = (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0) ? true : false;
+
+	//OldDirVector = MovementVector.GetSafeNormal();
+	////E. 
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	FVector ForwardDirection = FVector(FollowCamera->GetForwardVector().X, FollowCamera->GetForwardVector().Y, 0).GetSafeNormal();
+	FVector RightDirection = FVector(FollowCamera->GetRightVector().X, FollowCamera->GetRightVector().Y, 0).GetSafeNormal();
 
 	MoveForwardInput = MovementVector.Y;
 	MoveRightInput = MovementVector.X;
 
+	FRotator ControlRot = GetControlRotation();
+
+	FRotator YawRotation(0, NormalizeYaw(GetActorRotation().Yaw + CalculateYaw(ControlRot.Yaw, GetActorRotation().Yaw) * 0.2f), 0);
+
+	// 카메라 방향으로 캐릭터 회전
+	FQuat QuatRotation = FQuat(YawRotation);
+	SetActorRotation(QuatRotation);
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
 
-
-
-	bIsTurn = (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0) ? true : false;
+	if (FVector2D::DotProduct(OldDirVector, MovementVector.GetSafeNormal()) < 0)
+	{
+		bIsTurn = true;
+	}
 
 	OldDirVector = MovementVector.GetSafeNormal();
 }
@@ -144,6 +173,11 @@ void AGrimCharacter::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(-LookAxisVector.Y);
 }
 
+void AGrimCharacter::Jump()
+{
+	Super::Jump();
+}
+
 void AGrimCharacter::LeftButton(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated LeftButton Dagger");
@@ -152,4 +186,43 @@ void AGrimCharacter::LeftButton(const FInputActionValue& Value)
 void AGrimCharacter::RightButton(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Activated Right Dagger");
+}
+
+float AGrimCharacter::NormalizeYaw(float Yaw)
+{
+	while (Yaw >= 360.f) Yaw -= 360.0f;
+	while (Yaw < 0) Yaw += 360.0f;
+	return Yaw;
+}
+
+float AGrimCharacter::CalculateYaw(float DestYaw, float SourYaw)
+{
+	float NLDest = NormalizeYaw(DestYaw);
+	float NLSour = NormalizeYaw(SourYaw);
+
+	float Result = NLDest - NLSour;
+	float a, b;
+	a = NLDest - 360.f - NLSour;
+	b = NLDest + 360.f - NLSour;
+
+	if (fabsf(Result) > 180.f)
+	{
+		if (fabsf(Result) < fabsf(a))
+		{
+			if (fabsf(Result) < fabsf(b))
+				return Result;
+			else
+				return b;
+		}
+		else
+		{
+
+			if (fabsf(a) < fabsf(b))
+				return a;
+			else
+				return b;
+		}
+	}
+
+	return Result;
 }

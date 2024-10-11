@@ -40,6 +40,7 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	virtual void Jump() override;
 	void LeftButton(const FInputActionValue& Value);
 	void RightButton(const FInputActionValue& Value);
 
@@ -56,6 +57,17 @@ protected:
 	TObjectPtr<class UInputAction> LeftButtonAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"));
 	TObjectPtr<class UInputAction> RightButtonAction;
+
+//=====================================================================================
+// For Animation Control
+//=====================================================================================
+public:
+	float GetMoveForwardInput() { return MoveForwardInput; };
+	float GetMoveRightInput() { return MoveRightInput; };
+	bool  GetIsTurn() { return bIsTurn; };
+
+	float NormalizeYaw(float Yaw);
+	float CalculateYaw(float DestYaw, float SourYaw);
 
 private:
 	FVector2D OldDirVector;
