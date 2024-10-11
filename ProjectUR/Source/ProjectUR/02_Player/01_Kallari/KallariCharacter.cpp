@@ -181,7 +181,7 @@ void AKallariCharacter::CheckDagger(float DeltaSeconds)
 		CollisionParams.bTraceComplex = true; // 복잡한 트레이스 여부
 		CollisionParams.bReturnPhysicalMaterial = false; // 물리 재질 반환 여부
 
-		FCollisionShape SphereShape = FCollisionShape::MakeSphere(20.f);
+		FCollisionShape SphereShape = FCollisionShape::MakeSphere(1.f);
 		bResult = GetWorld()->SweepSingleByChannel(HitResult, LineTrace_Start, LineTrace_End, FQuat::Identity, ECC_Camera, SphereShape, CollisionParams);
 
 

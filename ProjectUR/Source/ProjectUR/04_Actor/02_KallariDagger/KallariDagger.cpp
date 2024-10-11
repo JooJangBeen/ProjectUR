@@ -80,7 +80,7 @@ void AKallariDagger::EclipseDagger_OverlapBegin(UPrimitiveComponent* OverlappedC
 			bIsOnGround = true;
 
 			SetLifeSpan(12.f);
-			CollisionComponent->SetSphereRadius(45.f);
+			CollisionComponent->SetSphereRadius(60.f);
 			MovementComp->StopMovementImmediately();
 			MovementComp->ProjectileGravityScale = 0.f;
 
