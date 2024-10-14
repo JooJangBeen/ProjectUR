@@ -37,9 +37,17 @@ void AKallariCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	//APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	//if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	if (PlayerController && PlayerController->IsLocalPlayerController())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 
 	Setup_MoveRestrictAnimNotify();
 	Setup_SkillAnimNotify();
