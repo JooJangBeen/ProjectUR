@@ -106,7 +106,6 @@ void AKallariCharacter::LoadMeshAnimation()
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/02_Player/01_Kallari/ABP_Kallari.ABP_Kallari_C"));
-	//static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstClassRef(TEXT("/Game/02_Player/99_Resources/ParagonKallari/Characters/Heroes/Kallari/Kallari_AnimBlueprint.Kallari_AnimBlueprint_C"));
 	if (AnimInstClassRef.Class)
 		GetMesh()->SetAnimInstanceClass(AnimInstClassRef.Class);
 }
