@@ -25,9 +25,25 @@ float NormalizeYaw(float Yaw)
 	return Yaw;
 }
 
+void UKallariAnimInstance::NativeInitializeAnimation()
+{
+
+	Super::NativeInitializeAnimation();
+	//foot_l
+	//foot_r
+	AnimIK = NewObject<UAnimIK>(this, UAnimIK::StaticClass());
+	AnimIK->InitializeIK(GetSkelMeshComponent(), 10.f,10.f,true);
+
+
+	AnimIK->AddIkBone("foot_l", 40, -60, 3);
+	AnimIK->AddIkBone("foot_r", 40, -60, 3);
+}
+
 void UKallariAnimInstance::NativeUpdateAnimation(float deltaTime)
 {
 	Super::NativeUpdateAnimation(deltaTime);
+
+	AnimIK->UpdateIK(deltaTime);
 
 	TObjectPtr<class AKallariCharacter> Owner = Cast<AKallariCharacter>(TryGetPawnOwner());
 
@@ -46,8 +62,6 @@ void UKallariAnimInstance::NativeUpdateAnimation(float deltaTime)
 		AimPitch = Rot.Pitch;
 		AimYaw = NormalizeYaw(Rot.Yaw);
 
-		//FString tt = "AimPitch : " + FString::SanitizeFloat(AimPitch) + "AimYaw : " + FString::SanitizeFloat(AimYaw);
-		//GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, tt);
 	}
 
 }

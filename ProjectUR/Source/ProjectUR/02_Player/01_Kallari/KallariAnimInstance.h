@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "../../08_Animations/AnimationIK/AnimIK.h"
 #include "KallariAnimInstance.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnAnimNofityEx);
@@ -49,6 +50,7 @@ public:
 	UKallariAnimInstance();
 
 public:
+	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float deltaTime) override;
 
 public:
@@ -59,8 +61,12 @@ public:
 	void PlayAnimMontage(EKallariMTG eMtg, FName sectionName, float PlayRate = 1.f);
 	void StopAnimMontage(EKallariMTG eMtg, float InOutBlendTime = 0.2f);
 
-private:
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IK", Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAnimIK> AnimIK;
+
+private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AnimMontage", Meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UAnimMontage>> AnimMontage;
 

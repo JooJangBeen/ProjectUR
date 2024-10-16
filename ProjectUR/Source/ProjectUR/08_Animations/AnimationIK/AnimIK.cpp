@@ -20,18 +20,21 @@ UAnimIK::~UAnimIK()
 {
 }
 
-void UAnimIK::InitializeIK(USkeletalMeshComponent* pSkeletalMeshComp, float interpspeed)
+void UAnimIK::InitializeIK(USkeletalMeshComponent* pSkeletalMeshComp, float UpOffset, float interpspeed, bool FootRotate)
 {
 	check(pSkeletalMeshComp);
 	SkeletalMeshComp = pSkeletalMeshComp;
 
 	InterpSpeed = interpspeed;
+	bFootRotate = FootRotate;
+	MeshUpOffset = UpOffset;
 }
 
 void UAnimIK::UpdateIK(float DeltaSeconds)
 {
 	TObjectPtr<ACharacter> owner = Cast<ACharacter>(SkeletalMeshComp->GetOwner());
-	check(owner);
+	if (!owner)
+		return;
 
 	if (owner->GetMovementComponent()->IsFalling())
 	{
@@ -64,7 +67,9 @@ void UAnimIK::UpdateIK(float DeltaSeconds)
 		{
 			for (auto& pair : BoneIndexs)
 			{
+				//위치 값 수정
 				BoneLocation = SkeletalMeshComp->GetBoneLocation(pair.Value.BoneName);
+				//BoneLocation.Z += MeshUpOffset;
 				TraceStart = FVector(BoneLocation.X, BoneLocation.Y, ActorLocation.Z + pair.Value.TopSideOffset);
 				TraceEnd = FVector(BoneLocation.X, BoneLocation.Y, ActorLocation.Z + pair.Value.BellowSideOffset);
 				FCollisionShape SphereShape = FCollisionShape::MakeSphere(pair.Value.radius);
@@ -77,7 +82,10 @@ void UAnimIK::UpdateIK(float DeltaSeconds)
 
 
 				if (bResult)
+				{
+					HitResult.ImpactPoint.Z += MeshUpOffset;
 					offsetTarget = HitResult.ImpactPoint - FVector(BoneLocation.X, BoneLocation.Y, ActorLocation.Z);
+				}
 				
 
 				*offset = FMath::VInterpTo(*offset, offsetTarget, DeltaSeconds, InterpSpeed);
@@ -85,6 +93,25 @@ void UAnimIK::UpdateIK(float DeltaSeconds)
 				if ((BoneLocation + *offset).Z < HitResult.ImpactPoint.Z)
 					*offset = offsetTarget;
 
+				//회전 값 수정
+				if (bFootRotate)
+				{
+					FRotator* Rotoffset = IKRotateOffSets.Find(pair.Value.BoneName);
+
+					*Rotoffset = FRotator(0, 0, 0);
+
+					if (bResult)
+					{
+
+
+						*Rotoffset = FRotator(
+							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.X, HitResult.Normal.Z)),
+							0,
+							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.Y, HitResult.Normal.Z)) * -1
+							);
+					}
+
+				}
 			}
 		}
 	}
@@ -109,6 +136,9 @@ bool UAnimIK::AddIkBone(FName bonename, float TopSideOffset, float BellowSideOff
 	BoneIndexs.Add(bonename, tIkData);
 	IKGoalPositionOffSets.Add(tIkData.BoneName, FVector());
 
+	if(bFootRotate)
+		IKRotateOffSets.Add(tIkData.BoneName, FRotator());
+
 	return true;
 }
 
@@ -131,13 +161,15 @@ FVector UAnimIK::CaculateActorBottom()
 	}
 	else if (USphereComponent* SphereComp = Cast<USphereComponent>(RootComp))
 	{
-		result = CapsuleComp->GetComponentLocation();
+		result = SphereComp->GetComponentLocation();
 		result.Z -= SphereComp->GetScaledSphereRadius();
 	}
 	else
 	{
-		return SkeletalMeshComp->GetOwner()->GetActorLocation();
+		result = SkeletalMeshComp->GetOwner()->GetActorLocation();
 	}
+
+	//result.Z -= MeshUpOffset;
 
 	return result;
 }

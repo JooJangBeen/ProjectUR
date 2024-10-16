@@ -9,7 +9,7 @@ void USpiderEyeAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	AnimIK = NewObject<UAnimIK>(this, UAnimIK::StaticClass());
-	AnimIK->InitializeIK(GetSkelMeshComponent(),10.f);
+	AnimIK->InitializeIK(GetSkelMeshComponent(),0,10.f, false);
 
 	AnimIK->AddIkBone("left_leg1_4",  500, -300, 3);
 	AnimIK->AddIkBone("left_leg2_4",  500, -300, 3);

@@ -31,7 +31,7 @@ public:
 	~UAnimIK();
 
 public:
-	void InitializeIK(USkeletalMeshComponent* pSkeletalMeshComp, float interpspeed = 15.f);
+	void InitializeIK(USkeletalMeshComponent* pSkeletalMeshComp, float MeshUpOffset = 0 , float interpspeed = 15.f, bool FootRotate = true);
 	void UpdateIK(float DeltaSeconds);
 
 public:
@@ -41,6 +41,8 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IK", Meta = (AllowPrivateAccess = true))
 	TMap<FName, FVector> IKGoalPositionOffSets;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IK", Meta = (AllowPrivateAccess = true))
+	TMap<FName, FRotator> IKRotateOffSets;
 
 
 private:
@@ -50,4 +52,6 @@ private:
 	TMap<FName, FIKTraceData> BoneIndexs;
 	TObjectPtr<class USkeletalMeshComponent> SkeletalMeshComp;
 	float InterpSpeed;
+	float MeshUpOffset;
+	bool bFootRotate;
 };
