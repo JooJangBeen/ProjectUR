@@ -23,9 +23,17 @@ void AGrimCharacter::BeginPlay()
 	Super::BeginPlay();
 
 
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	//APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	//if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController && PlayerController->IsLocalPlayerController())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
 void AGrimCharacter::Tick(float DeltaSeconds)
