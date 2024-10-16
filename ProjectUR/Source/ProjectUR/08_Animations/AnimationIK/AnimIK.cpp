@@ -102,13 +102,12 @@ void UAnimIK::UpdateIK(float DeltaSeconds)
 
 					if (bResult)
 					{
-
+						FVector FootForward = SkeletalMeshComp->GetBoneAxis(pair.Value.BoneName, EAxis::Y).GetSafeNormal();
+						float DotProduct = FVector::DotProduct(FootForward, FVector(0, 1, 0));
 
 						*Rotoffset = FRotator(
-							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.X, HitResult.Normal.Z)),
-							0,
-							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.Y, HitResult.Normal.Z)) * -1
-							);
+							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.X, HitResult.Normal.Z)),	0,
+							FMath::RadiansToDegrees(FMath::Atan2(HitResult.Normal.Y, HitResult.Normal.Z)) * DotProduct);
 					}
 
 				}
