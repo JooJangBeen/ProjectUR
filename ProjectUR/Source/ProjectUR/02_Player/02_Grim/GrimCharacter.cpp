@@ -36,7 +36,7 @@ void AGrimCharacter::Tick(float DeltaSeconds)
 void AGrimCharacter::SetupDefault()
 {
 	JumpCurrentCount = 0;
-	JumpMaxCount = 2;
+	JumpMaxCount = 1;
 
 	OldDirVector = FVector2d(0, 0);
 

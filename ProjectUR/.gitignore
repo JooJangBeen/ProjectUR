@@ -74,4 +74,7 @@ Plugins/**/Intermediate/*
 DerivedDataCache/*
 
 # Tools
-Tools/*
+Tools/
+
+# Table
+Content/Data/Table/

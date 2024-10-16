@@ -6,11 +6,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "../11_Manager/Managers.h"
+#include "../ProjectUR.h"
 
 
-ACTPlayerController::ACTPlayerController() : Super::APlayerController()
+ACTPlayerController::ACTPlayerController()
 {
-	
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/05_Input/IM_WorldDefualt.IM_WorldDefualt'"));
 	if (InputMappingContextRef.Object)
 		DefaultMappingContext = InputMappingContextRef.Object;
@@ -24,7 +24,11 @@ ACTPlayerController::ACTPlayerController() : Super::APlayerController()
 
 void ACTPlayerController::BeginPlay()
 {
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
+
 	Super::BeginPlay();
+
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("END"));
 
 	FInputModeGameOnly GameOnlyInputMode;
 	SetInputMode(GameOnlyInputMode);
