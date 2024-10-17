@@ -27,6 +27,9 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetMesh()->SetCustomDepthStencilValue(0);
+	GetMesh()->SetRenderCustomDepth(true);
 	
 }
 
