@@ -24,11 +24,11 @@ ACTPlayerController::ACTPlayerController()
 
 void ACTPlayerController::BeginPlay()
 {
-	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("Begin"));
 
 	Super::BeginPlay();
 
-	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("END"));
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("END"));
 
 	FInputModeGameOnly GameOnlyInputMode;
 	SetInputMode(GameOnlyInputMode);
@@ -38,6 +38,46 @@ void ACTPlayerController::BeginPlay()
 
 	GetMgr(UUIManager)->TurnAddRemove_UserWidgetGroup("InGameUIGroup");
 
+}
+
+void ACTPlayerController::PostInitializeComponents()
+{
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
+
+	Super::PostInitializeComponents();
+
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("END"));
+}
+
+void ACTPlayerController::PostNetInit()
+{
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
+
+	Super::PostNetInit();
+
+	UNetDriver* NetDriver = GetNetDriver();
+	if (NetDriver)
+	{
+		if (NetDriver->ServerConnection)
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("Server Connentions: %s"), *NetDriver->ServerConnection->GetName());
+		}
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No NetDriver"));
+	}
+
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("END"));
+}
+
+void ACTPlayerController::OnPossess(APawn* InPawn)
+{
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
+
+	Super::OnPossess(InPawn);
+
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("END"));
 }
 
 void ACTPlayerController::SetupInputComponent()

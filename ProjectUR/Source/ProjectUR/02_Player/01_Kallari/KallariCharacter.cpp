@@ -14,6 +14,7 @@
 #include "../04_Actor/02_KallariDagger/KallariDagger.h"
 #include "../11_Manager/Managers.h"
 #include "../07_UI/02_IngameUI/UW_Crosshair.h"
+#include "ProjectUR/ProjectUR.h"
 
 
 AKallariCharacter::AKallariCharacter()
@@ -37,7 +38,10 @@ void AKallariCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	//APlayerController* PlayerControllerTest = CastChecked<APlayerController>(GetController());
+
+	TestGetController();
+
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	//if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	//	Subsystem->AddMappingContext(DefaultMappingContext, 0);
@@ -53,6 +57,37 @@ void AKallariCharacter::BeginPlay()
 	Setup_SkillAnimNotify();
 }
 
+void AKallariCharacter::TestGetController()
+{
+	AController* testController = GetController();
+
+	if (HasAuthority())
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = true"));
+
+		if (!testController)
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = true, PlayerController nullptr"));
+		}
+		else
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = true, PlayerController Get in"));
+		}
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = false"));
+		if (!testController)
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = false, PlayerController nullptr"));
+		}
+		else
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("HasAuthority = false, PlayerController Get in"));
+		}
+	}
+}
+
 void AKallariCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -61,6 +96,63 @@ void AKallariCharacter::Tick(float DeltaSeconds)
 	RestrictMove(DeltaSeconds);
 
 
+}
+
+void AKallariCharacter::PossessedBy(AController* newController)
+{
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("Begin"));
+	AActor* ownerActor = GetOwner();
+	if (ownerActor)
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("Owner : %s"), *ownerActor->GetName());
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+
+	Super::PossessedBy(newController);
+
+	ownerActor = GetOwner();
+	if (ownerActor)
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("Owner : %s"), *ownerActor->GetName());
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("END"));
+}
+
+//캐릭터 복제(클라이언트에서 자신 말고 다른 캐릭터들을 생성할때 호출되는 함수이다.)
+void AKallariCharacter::OnRep_Owner()
+{
+	PUR_LOG(LogNetwork, Log, TEXT("%s, %s"),*GetName(), TEXT("Begin"));
+
+	Super::OnRep_Owner();
+
+	AActor* ownerActor = GetOwner();
+	if (ownerActor)
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("Owner : %s"), *ownerActor->GetName());
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+	
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("END"));
+}
+
+void AKallariCharacter::PostNetInit()
+{
+	PUR_LOG(LogNetwork, Log, TEXT("%s %s"), TEXT("Begin"), *GetName());
+
+	Super::PostNetInit();
+
+	PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("END"));
 }
 
 void AKallariCharacter::SetupDefault()
@@ -174,8 +266,8 @@ void AKallariCharacter::CheckDagger(float DeltaSeconds)
 		FVector CamPos;
 		FRotator SpawnRot;
 
-		GetController()->GetPlayerViewPoint(CamPos, SpawnRot);
-
+		//GetController()->GetPlayerViewPoint(CamPos, SpawnRot);
+		GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(CamPos, SpawnRot);
 		FVector LineTrace_Start = CamPos;
 		FVector LineTrace_End = LineTrace_Start + SpawnRot.Vector() * 2500.f;
 		FHitResult HitResult;
@@ -300,8 +392,7 @@ void AKallariCharacter::Setup_SkillAnimNotify()
 			FRotator SpawnRotation;
 
 			SpawnLocation = GetMesh()->GetSocketLocation(FName("sword_handle_r"));
-			GetController()->GetPlayerViewPoint(CamPos, SpawnRotation);
-
+			GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(CamPos, SpawnRotation);
 			SpawnRotation = (((CamPos + SpawnRotation.Vector() * 1500.f) - SpawnLocation).GetSafeNormal()).Rotation();
 
 			TObjectPtr<AKallariDagger> ECDagger = GetWorld()->SpawnActor<AKallariDagger>(EclipseDagger, SpawnLocation, SpawnRotation);

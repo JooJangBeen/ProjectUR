@@ -19,6 +19,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
+	virtual void PostNetInit() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 
 

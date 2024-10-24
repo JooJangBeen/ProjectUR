@@ -8,8 +8,9 @@
 #include "CTWorldSettings.h"
 #include "EnhancedInputSubsystems.h"
 #include "../ProjectUR.h"
+#include "CTGameStateBase.h"
 
-ACTGameModeBase::ACTGameModeBase() : Super::AGameModeBase()
+ACTGameModeBase::ACTGameModeBase()
 {
 
 
@@ -54,8 +55,7 @@ ACTGameModeBase::ACTGameModeBase() : Super::AGameModeBase()
 
 
 	PlayerControllerClass = ACTPlayerController::StaticClass();
-
-
+	GameStateClass = ACTGameStateBase::StaticClass();
 }
 
 void ACTGameModeBase::BeginPlay()
@@ -67,6 +67,7 @@ void ACTGameModeBase::BeginPlay()
 //클라이언트의 접속요청을 처리하는 함수
 void ACTGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
+	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("======================================================"));
 	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
 
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
@@ -91,6 +92,25 @@ void ACTGameModeBase::PostLogin(APlayerController* NewPlayer)
 	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("Begin"));
 
 	Super::PostLogin(NewPlayer);
+	UNetDriver* NetDriver = GetNetDriver();
+	if (NetDriver)
+	{
+		if (NetDriver->ClientConnections.Num() == 0)
+		{
+			PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No Client Connection"));
+		}
+		else
+		{
+			for (const auto& Connection : NetDriver->ClientConnections)
+			{
+				PUR_LOG(LogNetwork, Log, TEXT("Client Connentions: %s"), *Connection->GetName());
+			}
+		}
+	}
+	else
+	{
+		PUR_LOG(LogNetwork, Log, TEXT("%s"), TEXT("No NetDriver"));
+	}
 	
 	PUR_LOG(LogNetwork, Log, TEXT("% s"), TEXT("End"));
 }

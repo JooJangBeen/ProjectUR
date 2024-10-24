@@ -37,6 +37,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void PossessedBy(AController* newController) override;
+	virtual void OnRep_Owner() override;
+	virtual void PostNetInit() override;
 
 
 //=====================================================================================
@@ -129,4 +132,8 @@ private:
 	bool bMoveLRLock;
 	bool bMoveBLock;
 	bool bJumpingLock;
+
+public:
+	void TestGetController();
+
 };
