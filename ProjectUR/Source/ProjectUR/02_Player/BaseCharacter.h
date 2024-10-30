@@ -34,13 +34,22 @@ class PROJECTUR_API ABaseCharacter : public ACharacter, public CLevelUpCardData
 {
 	GENERATED_BODY()
 
-	
 public:
 	ABaseCharacter();
 
 
 protected:
 	virtual void BeginPlay() override;
+
+	//==================================================================================
+	// Network
+	//==================================================================================
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Network, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* PlayerDisplay;
+
+	void CraetePlayerDisplay();
+	void PlayerDisplayVisibility();
 
 
 
