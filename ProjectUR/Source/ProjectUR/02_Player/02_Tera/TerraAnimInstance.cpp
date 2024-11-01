@@ -12,9 +12,23 @@ UTerraAnimInstance::UTerraAnimInstance()
 	IsInAir = false;
 }
 
+void UTerraAnimInstance::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
+
+	AnimIK = NewObject<UAnimIK>(this, UAnimIK::StaticClass());
+	AnimIK->InitializeIK(GetSkelMeshComponent(), 11.f, 10.f, true);
+
+
+	AnimIK->AddIkBone("foot_l", 40, -60, 5);
+	AnimIK->AddIkBone("foot_r", 40, -60, 5);
+}
+
 void UTerraAnimInstance::NativeUpdateAnimation(float deltaTime)
 {
 	Super::NativeUpdateAnimation(deltaTime);
+
+	AnimIK->UpdateIK(deltaTime);
 
 	TObjectPtr<ATeraCharacter> Owner = Cast<ATeraCharacter>(TryGetPawnOwner());
 
