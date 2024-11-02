@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "../../08_Animations/AnimationIK/AnimIK.h"
 #include "TerraAnimInstance.generated.h"
 
 /**
@@ -19,7 +20,12 @@ public:
 	UTerraAnimInstance();
 
 public:
+	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float deltaTime) override;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IK", Meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAnimIK> AnimIK;
 	
 private:
 	/* Player Info Value */

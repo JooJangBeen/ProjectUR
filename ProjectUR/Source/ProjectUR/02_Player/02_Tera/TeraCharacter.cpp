@@ -27,9 +27,12 @@ void ATeraCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	if (IsLocallyControlled())
+	{
+		APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
 }
 
 // Called every frame

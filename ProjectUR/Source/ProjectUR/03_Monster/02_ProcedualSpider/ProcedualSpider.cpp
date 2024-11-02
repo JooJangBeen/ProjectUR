@@ -36,7 +36,7 @@ AProcedualSpider::AProcedualSpider()
 	GetMesh()->SetWorldRotation(NewRotation);
 
 
-	GetArrowComponent()->SetupAttachment(RootComponent);
+	//GetArrowComponent()->SetupAttachment(RootComponent);
 
 	MoveSpeed = 20.f;
 

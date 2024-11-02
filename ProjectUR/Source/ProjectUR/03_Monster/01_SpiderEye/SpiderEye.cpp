@@ -24,7 +24,7 @@ ASpiderEye::ASpiderEye()
 
 	GetMesh()->SetupAttachment(RootComponent);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 86.0f, -144.0f));
-	GetArrowComponent()->SetupAttachment(RootComponent);
+	//GetArrowComponent()->SetupAttachment(RootComponent);
 
 	
 

@@ -14,5 +14,5 @@ FString ANetworkTextRenderActor::GetNetMode()
 	case ENetMode::NM_DedicatedServer: return TEXT("DedicatedServer");
 	case ENetMode::NM_Client: return TEXT("Client");
 	}
-	return TEXT("반가워요~");
+	return TEXT("Not NetMode : ANetworkTextRenderActor::GetNetMode() ");
 }
