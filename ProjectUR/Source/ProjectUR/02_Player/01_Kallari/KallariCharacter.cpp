@@ -679,6 +679,33 @@ void AKallariCharacter::Look(const FInputActionValue& Value)
 void AKallariCharacter::Jump()
 {
 	if (bJumpingLock) return;
+	/*
+	GetMgr(UThreadsManager)->AddTask([]() {
+
+		FPlatformProcess::Sleep(5);
+		return 0; });
+	*/
+	/*
+#include "Async/Async.h"
+	Async(EAsyncExecution::TaskGraph, []()
+		{
+			UE_LOG(LogTemp, Log, TEXT("Async Task Executing"));
+		});
+
+	*/
+
+	/*
+#include "Async/ParallelFor.h"
+	
+	int32 NumTasks = 100;
+	ParallelFor(NumTasks, [](int32 Index)
+		{
+			UE_LOG(LogTemp, Log, TEXT("ParallelFor Task Index: %d"), Index);
+		});
+
+		*/
+
+
 	Super::Jump();
 
 }
