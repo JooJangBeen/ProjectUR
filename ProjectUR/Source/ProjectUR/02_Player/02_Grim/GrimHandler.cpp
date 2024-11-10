@@ -7,10 +7,6 @@ GrimHandler::GrimHandler()
 {
 }
 
-GrimHandler::~GrimHandler()
-{
-}
-
 void GrimHandler::ProcessNetworkPacket()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("asdasdsadasd"));

@@ -21,7 +21,6 @@ class PROJECTUR_API GrimHandler
 {
 public:
 	GrimHandler();
-	~GrimHandler();
 
 public:
 	UFUNCTION()
