@@ -3,14 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GrimHandler.h"
 #include "../BaseCharacter.h"
+#include "Net/UnrealNetwork.h"
+#include "../05_GAS/01_AttributeSet/PlayerAttributeSet.h"
 #include "GrimCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUR_API AGrimCharacter : public ABaseCharacter
+class PROJECTUR_API AGrimCharacter : public ABaseCharacter, public GrimHandler
 {
 	GENERATED_BODY()
 
@@ -24,6 +27,37 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+//=====================================================================================
+// GameAttributeSystem
+//=====================================================================================
+public:
+	UPlayerAttributeSet* GrimAttribute;
+
+//=====================================================================================
+// Dedicated Server
+//=====================================================================================
+public:
+	UPROPERTY(ReplicatedUsing = OnRep_ProcessNetworkPacket)
+	EGrimNetworkType ENetworkType = EGrimNetworkType::MAX;
+
+	UPROPERTY(Replicated)
+	int32 MyVariable;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+	UFUNCTION()
+	void OnRep_ProcessNetworkPacket();
+
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC(); // 서버에서 호출되어 모든 클라이언트에서 실행
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC(); //클라이언트에서 서버로 실행, 해킹의 위험이 있기에 WithValidation 플래그를 추가하여 추가 검증 가능
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPC(); // 서버에서 호출되어 특정 클라이언트에서 실행
 
 //=====================================================================================
 // Load & Prepare Something

@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Engine/Engine.h"
 
 AGrimCharacter::AGrimCharacter()
 {
@@ -16,6 +17,8 @@ AGrimCharacter::AGrimCharacter()
 	LoadMeshAnimation();
 	LoadEnhancedInput();
 	InitializeCardData(ECharacterType::Grim);
+
+	GrimAttribute = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("AbilitySystemComponent"));
 }
 
 void AGrimCharacter::BeginPlay()
@@ -39,6 +42,69 @@ void AGrimCharacter::BeginPlay()
 void AGrimCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (HasAuthority())
+	{
+		// 현재 플레이어 컨트롤러 가져오기
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			// 예: 'F' 키가 눌렸는지 확인
+			if (PlayerController->IsInputKeyDown(EKeys::F))
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Eclipse Dagger Input : %f, %f"), MouseInput.X, MouseInput.Y));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Input F"));
+
+				ENetworkType = EGrimNetworkType::A;
+			}
+
+			// 예: 'G' 키가 방금 눌렸는지 확인
+			if (PlayerController->WasInputKeyJustPressed(EKeys::G))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Input G"));
+
+				ENetworkType = EGrimNetworkType::B;
+			}
+
+			// 예: 'H' 키가 방금 놓였는지 확인
+			if (PlayerController->WasInputKeyJustReleased(EKeys::H))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Input H"));
+
+				ENetworkType = EGrimNetworkType::C;
+			}
+		}
+	}
+}
+
+void AGrimCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGrimCharacter, ENetworkType);
+	DOREPLIFETIME_CONDITION(AGrimCharacter, MyVariable, COND_OwnerOnly);
+}
+
+void AGrimCharacter::OnRep_ProcessNetworkPacket()
+{
+	GrimHandler::ProcessNetworkPacket();
+}
+
+void AGrimCharacter::ServerRPC_Implementation()
+{
+}
+
+void AGrimCharacter::MulticastRPC_Implementation()
+{
+}
+
+bool AGrimCharacter::ServerRPC_Validate()
+{
+	return true;
+}
+
+void AGrimCharacter::ClientRPC_Implementation()
+{
 }
 
 void AGrimCharacter::SetupDefault()
