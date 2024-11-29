@@ -3,6 +3,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/ArrowComponent.h"
+#include "SpiderEyeAIController.h"
 
 
 ASpiderEye::ASpiderEye()
@@ -22,10 +23,20 @@ ASpiderEye::ASpiderEye()
 	if (AnimInstClassRef.Class)
 		GetMesh()->SetAnimInstanceClass(AnimInstClassRef.Class);
 
+
+	FRotator NewRotation = GetMesh()->GetComponentRotation();
+	NewRotation.Yaw -= 90.0f;
+	GetMesh()->SetWorldRotation(NewRotation);
+
+
 	GetMesh()->SetupAttachment(RootComponent);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 86.0f, -144.0f));
 	//GetArrowComponent()->SetupAttachment(RootComponent);
 
-	
 
+	AIControllerClass = ASpiderEyeAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
+
+
+

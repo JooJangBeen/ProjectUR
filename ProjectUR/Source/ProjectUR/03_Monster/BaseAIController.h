@@ -3,20 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseMonster.h"
-#include "SpiderEye.generated.h"
+#include "AIController.h"
+#include "BaseAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUR_API ASpiderEye : public ABaseMonster
+class PROJECTUR_API ABaseAIController : public AAIController
 {
 	GENERATED_BODY()
-
-public:
-	ASpiderEye();
-
-
 	
 };
