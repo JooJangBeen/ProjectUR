@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "../BaseCharacter.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "GenericTeamAgentInterface.h" // 팀 인터페이스 관련 헤더 파일
 #include "KallariCharacter.generated.h"
 
 /**
@@ -24,7 +26,7 @@ enum class EKallariInputAction : uint8
 #define KallariDefault_AirControl 0.35f
 
 UCLASS()
-class PROJECTUR_API AKallariCharacter : public ABaseCharacter
+class PROJECTUR_API AKallariCharacter : public ABaseCharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 	
@@ -79,6 +81,17 @@ protected:
 
 private:
 	TSubclassOf<class AKallariDagger> EclipseDagger;
+
+//=====================================================================================
+// For Perception Stimulus Component Control
+//=====================================================================================
+private:
+	void InitStimuliComponent();
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
+
 
 //=====================================================================================
 // For Animation Control

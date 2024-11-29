@@ -14,6 +14,11 @@
 #include "../04_Actor/02_KallariDagger/KallariDagger.h"
 #include "../11_Manager/Managers.h"
 #include "../07_UI/02_IngameUI/UW_Crosshair.h"
+
+#include "Perception/AIPerceptionSystem.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Hearing.h"
+
 #include "ProjectUR/ProjectUR.h"
 
 
@@ -347,6 +352,20 @@ void AKallariCharacter::RestrictMove(float DeltaSeconds)
 		AddMovementInput(ForwardDirection, 1);
 	}
 
+}
+
+void AKallariCharacter::InitStimuliComponent()
+{  
+	// Stimuli Source Component 생성 및 초기화
+	StimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSourceComponent"));
+
+	// 감각 타입 설정 (시각과 청각 추가)
+	StimuliSourceComponent->bAutoRegister = true;
+	StimuliSourceComponent->RegisterForSense(UAISense_Sight::StaticClass());
+	StimuliSourceComponent->RegisterForSense(UAISense_Hearing::StaticClass());
+
+	// 팀 ID 설정
+	SetGenericTeamId(FGenericTeamId(1));  // 1번 팀으로 설정
 }
 
 void AKallariCharacter::Setup_SkillAnimNotify()

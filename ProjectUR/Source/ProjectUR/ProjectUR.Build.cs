@@ -8,7 +8,13 @@ public class ProjectUR : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Niagara", "Slate", "SlateCore", "GameplayAbilities", "GameplayTags", "GameplayTasks" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", "CoreUObject", "Engine", "InputCore", 
+			"EnhancedInput", "UMG", "Niagara", "Slate", "SlateCore", 
+			"GameplayAbilities", "GameplayTags", "GameplayTasks" ,
+            "AIModule"
+
+        });
 		PrivateDependencyModuleNames.AddRange(new string[] { "CableComponent" });
     }
 }
