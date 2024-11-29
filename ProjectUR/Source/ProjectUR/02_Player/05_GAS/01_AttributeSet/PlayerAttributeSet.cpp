@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "PlayerAttributeSet.h"
 
 UPlayerAttributeSet::UPlayerAttributeSet()
@@ -37,4 +36,17 @@ float UPlayerAttributeSet::GetMaxHp()
 {
 	return Hp.GetBaseValue();
 
+}
+
+void UPlayerAttributeSet::OnRep_Damage(const FGameplayAttributeData& OldDamage)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, Damage, OldDamage);
+}
+
+void UPlayerAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(UPlayerAttributeSet, Damage);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPlayerAttributeSet, Damage, COND_None, REPNOTIFY_Always);
 }

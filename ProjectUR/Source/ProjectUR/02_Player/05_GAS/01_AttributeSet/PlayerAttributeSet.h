@@ -4,8 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
+#include "Net/UnrealNetwork.h"
+#include "AbilitySystemComponent.h"
 #include "PlayerAttributeSet.generated.h"
 
+#define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
+    GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
+    GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
+    GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
+    GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 /**
  * 
  */
@@ -38,5 +45,18 @@ public:
 private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes", Meta = (AllowPrivateAccess = true))
     FGameplayAttributeData Hp;
+
+//=====================================================================================
+// Dedicated Server
+//=====================================================================================
+public:
+    UFUNCTION()
+    void OnRep_Damage(const FGameplayAttributeData& OldDamage);
+
+    UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Damage)
+    FGameplayAttributeData Damage;
+    //ATTRIBUTE_ACCESSORS(UPlayerAttributeSet, Damage)
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 };
