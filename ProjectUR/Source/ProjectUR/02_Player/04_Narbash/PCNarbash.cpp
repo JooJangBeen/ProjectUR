@@ -5,31 +5,26 @@
 #include "../NarbashStick.h"
 #include "TimerManager.h"
 #include "InputMappingContext.h"
+#include "PCNarbashAnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "PCNarbashAnimInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "../05_GAS/CTAbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "../05_GAS/03_Ability/NarbashNormalAtkAbility.h"
+#include "../05_GAS/01_AttributeSet/PlayerAttributeSet.h"
+
 
 APCNarbash::APCNarbash()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_MeshInfo(TEXT("/Game/02_Player/99_Resources/ParagonNarbash/Characters/Heroes/Narbash/Meshes/Narbash.Narbash"));
-	if (SK_MeshInfo.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(SK_MeshInfo.Object);
-	}
+	SetupComponents();
+	SetupMappingContext();
+	SetupProperties();
+	SetupAttributes();
+	SetupAbilities();
 
-	static ConstructorHelpers::FClassFinder<UPCNarbashAnimInstance> BP_AnimInst(TEXT("/Game/01_Blueprint/02_PCNarbash/ABP_PCNarbash.ABP_PCNarbash_C"));
-	if (BP_AnimInst.Succeeded())
-	{
-		GetMesh()->SetAnimInstanceClass(BP_AnimInst.Class);
-	}
-
-	InitMappingContextSetting();
-	InitCameraSetting();
-	InitProperties();
 	InitializeCardData(ECharacterType::Narbash);
 
 }
@@ -49,6 +44,9 @@ void APCNarbash::BeginPlay()
 	PCAnimInstance = Cast<UPCNarbashAnimInstance>(GetMesh()->GetAnimInstance());
 	SetupNotifys();
 
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	NormalAttackAbilityHandle = AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UNarbashNormalAtkAbility::StaticClass(), 1, 0, this));
+	
 }
 
 void APCNarbash::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -70,13 +68,27 @@ void APCNarbash::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	}
 }
 
-void APCNarbash::InitProperties()
+void APCNarbash::SetupComponents()
+{
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_MeshInfo(TEXT("/Game/02_Player/99_Resources/ParagonNarbash/Characters/Heroes/Narbash/Meshes/Narbash.Narbash"));
+	if (SK_MeshInfo.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(SK_MeshInfo.Object);
+	}
+
+	static ConstructorHelpers::FClassFinder<UPCNarbashAnimInstance> BP_AnimInst(TEXT("/Game/01_Blueprint/02_PCNarbash/ABP_PCNarbash.ABP_PCNarbash_C"));
+	if (BP_AnimInst.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(BP_AnimInst.Class);
+	}
+
+}
+
+void APCNarbash::SetupProperties()
 {
 	SkillTwoDecSpeedLerpRate = 0.f;
 	MoveForwardInput = 0.f;
 	MoveRightInput = 0.f;
-	CurCombo = 0;
-	MaxCombo = 0;
 
 	IsAttacking = false;
 	bMoveFBLock = false;
@@ -86,9 +98,17 @@ void APCNarbash::InitProperties()
 
 }
 
-void APCNarbash::InitCameraSetting()
+void APCNarbash::SetupAttributes()
 {
-	
+	PlayerAttributeSet = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("AttributeSet"));
+	PlayerAttributeSet->InitMaxHp(100.f);
+	PlayerAttributeSet->InitCurrentHp(100.f);
+
+}
+
+void APCNarbash::SetupAbilities()
+{
+	AbilitySystemComponent = CreateDefaultSubobject<UCTAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
 }
 
@@ -98,21 +118,6 @@ void APCNarbash::SetupNotifys()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Not Exist AnimInstance"));
 	}
-
-	PCAnimInstance->OnAttackEnd.AddLambda([this]()->void {
-		IsAttacking = false;
-		bPressAttack = false;
-		CurCombo = 0;
-	});
-
-	PCAnimInstance->OnNextComboCheck.AddLambda([this]()->void {
-		if (bPressAttack)
-		{
-			CurCombo = (CurCombo + 1) % MaxCombo;
-			bPressAttack = false;
-			PCAnimInstance->PlayNormalAttackMontage(CurCombo);
-		}
-	});
 
 	PCAnimInstance->OnSkillOneEnd.AddLambda([this]()->void {
 		bMoveFBLock = false;
@@ -202,30 +207,8 @@ void APCNarbash::StopJumping()
 
 void APCNarbash::NormalAttack()
 {
-	if (!IsAttacking)
-	{
-		if (!bReadySkillOne)
-		{
-			PCAnimInstance->PlayNormalAttackMontage(CurCombo);
-		}
-		else
-		{
-			bMoveFBLock = true;
-			bMoveLRLock = true;
-			bCamYawLock = true;
-			bJumpingLock = true;
-			bCamPitchLock = true;
-			bReadySkillOne = false;
-			PCAnimInstance->PlaySkillOneMontage();
-		}
+	AbilitySystemComponent->TryActivateAbility(NormalAttackAbilityHandle, false);
 
-		IsAttacking = true;
-	}
-	else
-	{
-		bPressAttack = true;
-	}
-	
 }
 
 void APCNarbash::DashStart()
@@ -362,7 +345,7 @@ void APCNarbash::StopSkillTwo()
 	PCAnimInstance->StopSkillTwoMontage();
 }
 
-void APCNarbash::InitMappingContextSetting()
+void APCNarbash::SetupMappingContext()
 {
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IM_ContextAsset(TEXT("/Game/05_Input/00_PCNarbash/MappingContext/IM_PCNarbashDefault.IM_PCNarbashDefault"));
 	if(IM_ContextAsset.Succeeded())
@@ -424,4 +407,26 @@ float APCNarbash::GetMoveRightInput()
 {
 	return MoveRightInput;
 
+}
+
+UPCNarbashAnimInstance* APCNarbash::GetAnimInstance()
+{
+	return PCAnimInstance;
+}
+
+void APCNarbash::InitCharacterTags()
+{
+//	CharacterTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Alive")));
+
+}
+
+void APCNarbash::IsKnockDown()
+{
+//	CharacterTags.HasTag(FGameplayTag::RequestGameplayTag(FName("KnockDown")));
+
+}
+
+void APCNarbash::EndKnockDown()
+{
+//	CharacterTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("KnockDown")));
 }

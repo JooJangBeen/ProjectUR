@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "../BaseCharacter.h"
+//#include "GameplayTagContainer.h"
+#include "GameplayAbilitySpec.h"
 #include "PCNarbash.generated.h"
 
 /**
@@ -15,16 +17,24 @@ class PROJECTUR_API APCNarbash : public ABaseCharacter
 	GENERATED_BODY()
 	
 public:
+	/* Constructor */
 	APCNarbash();
 
 protected:
 	virtual void BeginPlay() override;
 
 protected:
+	/* Setup Func */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void InitProperties();
-	virtual void InitCameraSetting();
+	virtual void SetupComponents();
+	virtual void SetupProperties();
+	virtual void SetupAttributes();
+	virtual void SetupAbilities();
 	virtual void SetupNotifys();
+	virtual void SetupMappingContext();
+
+protected:
+	/* Behavior Func */
 	virtual void Move(const FInputActionValue& Value);
 	virtual void Look(const FInputActionValue& Value);
 	virtual void Jump() override;
@@ -40,15 +50,17 @@ protected:
 	void SkillTwoPrePose();
 	void StopSkillTwo();
 
-private:
-	void InitMappingContextSetting();
-
 public:
+	/* Get InputData*/
 	float GetMoveForwardInput();
 	float GetMoveRightInput();
 
+public:
+	/* Get Component */
+	class UPCNarbashAnimInstance* GetAnimInstance();
+
 private:
-	/* Relate Key Bind */
+	/* Key Bind Property */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
@@ -74,6 +86,7 @@ private:
 	TObjectPtr<class UInputAction> DashAction;
 
 private:
+	/* Action State Property */
 	float MoveForwardInput;
 	float MoveRightInput;
 
@@ -82,14 +95,7 @@ private:
 	bool bPressAttack;
 
 private:
-	/* Relate Player State / if state class is implemented, move data */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player State", Meta = (AllowPrivateAccess = true))
-	uint8 MaxCombo;
-	
-	uint8 CurCombo;
-
-private:
-	/* Relate Player Skill State / if Skill state class is implemented, move data */
+	/* Player Skill State Property / if Skill state class is implemented, move data */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Skill Info", Meta = (AllowPrivateAccess = true, ClampMin = 0.1f))
 	float MaxDashPlayTime;
 
@@ -100,24 +106,36 @@ private:
 	float DashMoveValue;
 
 private:
-	/* Timer */
+	/* Timer Property */
 	FTimerHandle DashTimer;
 	FTimerHandle DashEndTimer;
 	FTimerHandle SkillTwoReadyTimer;
 
 private:
-	/* Restricted Action Key */
+	/* Restricted Action Key Property */
 	bool bCamYawLock;
 	bool bCamPitchLock;
 	bool bMoveFBLock;
 	bool bMoveLRLock;
 	bool bJumpingLock;
-
+	
 private:
+	/* Dash Skill Property */
 	FRotator DashStartControllerRot;
 	FRotator DashStartPlayerRot;
 	float ControllerRotLerpRate;
 	float SkillTwoDecSpeedLerpRate;
+
+private:
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags", Meta = (AllowPrivateAccess = true))
+	//FGameplayTagContainer CharacterTags;
+
+	/*
+		Tag 적용 예제 코드
+	*/
+	void InitCharacterTags();
+	void IsKnockDown();
+	void EndKnockDown();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Skill", Meta = (AllowPrivateAccess = true))
@@ -126,7 +144,18 @@ private:
 	TObjectPtr<class ANarbashStick> StickActor;
 
 private:
+	/* GAS Property */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GAS", Meta = (AllowPrivateAccess = ture))
+	TObjectPtr<class UPlayerAttributeSet> PlayerAttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AbilitySystem, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCTAbilitySystemComponent> AbilitySystemComponent;
+
+	FGameplayAbilitySpecHandle NormalAttackAbilityHandle;
+
+private:
+	/* Components Property */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Anim, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPCNarbashAnimInstance> PCAnimInstance;
-
+	
 };

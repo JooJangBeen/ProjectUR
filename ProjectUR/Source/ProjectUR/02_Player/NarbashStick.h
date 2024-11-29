@@ -26,9 +26,13 @@ public:
 public:
 	void AttachCableEnd(USkeletalMeshComponent* AttachMesh, FName AttachSocketName);
 
+public:
+	UFUNCTION()
+	void StickOnOvelapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
-	TObjectPtr<class USceneComponent> RootComp;
+	TObjectPtr<class USphereComponent> RootComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UStaticMeshComponent> BodyMesh;
@@ -38,5 +42,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UProjectileMovementComponent> MovementComp;
+
+	bool IsHitLandform;
 
 };
